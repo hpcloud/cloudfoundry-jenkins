@@ -45,12 +45,6 @@ public class StackatoPushBuilder extends Builder {
             URL targetUrl = new URL(target);
             CloudCredentials credentials = new CloudCredentials(username, password);
             CloudFoundryClient client = new CloudFoundryClient(credentials, targetUrl, organization, cloudSpace);
-
-            Staging staging = new Staging();
-            List<String> uris = new ArrayList<String>();
-            uris.add(uri);
-            List<String> services = new ArrayList<String>();
-            client.createApplication("app-from-jenkins", staging, 512, uris, services);
             return true;
         } catch (MalformedURLException e) {
             listener.getLogger().println("The target URL is not valid: " + e.getMessage());
