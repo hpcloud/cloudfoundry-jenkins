@@ -8,10 +8,12 @@ import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
+import net.sf.json.JSONObject;
 import org.cloudfoundry.client.lib.CloudCredentials;
 import org.cloudfoundry.client.lib.CloudFoundryClient;
 import org.cloudfoundry.client.lib.domain.Staging;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.StaplerRequest;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -21,12 +23,12 @@ import java.util.List;
 
 public class StackatoPushBuilder extends Builder {
 
-    private final String target;
-    private final String organization;
-    private final String cloudSpace;
-    private final String username;
-    private final String password;
-    private final String uri;
+    public final String target;
+    public final String organization;
+    public final String cloudSpace;
+    public final String username;
+    public final String password;
+    public final String uri;
 
     @DataBoundConstructor
     public StackatoPushBuilder(String target, String organization, String cloudSpace,
@@ -103,5 +105,6 @@ public class StackatoPushBuilder extends Builder {
         public String getDisplayName() {
             return "Push to Stackato";
         }
+
     }
 }

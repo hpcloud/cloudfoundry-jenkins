@@ -6,7 +6,7 @@ This is a prototype that can push simple apps to Stackato at the end of a Jenkin
 Installing:
 -----------
 Due to conflicts between the versions of Spring used by Jenkins and the CF Java client, this plugin uses a modified version of the CF Java client with shaded libraries.  
-The jar file is included in the lib subfolder. To install it to your local Maven repository, run:
+The jar file is included in the `lib` subfolder. To install it to your local Maven repository, run:
 
 ```
 mvn org.apache.maven.plugins:maven-install-plugin:2.5.1:install-file -Dfile=lib/cloudfoundry-client-lib-shaded-1.0.3.jar
