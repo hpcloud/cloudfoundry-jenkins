@@ -14,11 +14,13 @@ import hudson.tasks.Recorder;
 import net.sf.json.JSONObject;
 import org.cloudfoundry.client.lib.CloudCredentials;
 import org.cloudfoundry.client.lib.CloudFoundryClient;
+import org.cloudfoundry.client.lib.StartingInfo;
 import org.cloudfoundry.client.lib.domain.Staging;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -32,16 +34,18 @@ public class StackatoPushPublisher extends Recorder {
     public final String username;
     public final String password;
     public final String uri;
+    public final String appDir;
 
     @DataBoundConstructor
     public StackatoPushPublisher(String target, String organization, String cloudSpace,
-                                 String username, String password, String uri) {
+                                 String username, String password, String uri, String appDir) {
         this.target = target;
         this.organization = organization;
         this.cloudSpace = cloudSpace;
         this.username = username;
         this.password = password;
         this.uri = uri;
+        this.appDir = appDir;
     }
 
     @Override
@@ -82,21 +86,31 @@ public class StackatoPushPublisher extends Recorder {
             client.createApplication(appName, staging, 512, uris, services);
 
             listener.getLogger().println("Pushing app bits.");
-            FilePath warPath = new FilePath(build.getWorkspace(), "target/hello-java-1.0.war");
-            File warFile = new File(warPath.toURI());
-            client.uploadApplication(appName, warFile);
+            FilePath appPath = new FilePath(build.getWorkspace(), appDir);
+            File appFile = new File(appPath.toURI());
+            client.uploadApplication(appName, appFile);
 
-            //TODO: start app and show url
+            listener.getLogger().println("Starting application.");
+            client.startApplication(appName);
+
+            listener.getLogger().println("Application will be running at " + uri);
 
             listener.getLogger().println("Stackato push successful.");
             return true;
         } catch (MalformedURLException e) {
             listener.getLogger().println("The target URL is not valid: " + e.getMessage());
             return false;
-        } catch (Exception e) {
-            e.printStackTrace(listener.getLogger());
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            return false;
+        } catch (IOException e) {
+            e.printStackTrace();
             return false;
         }
+// catch (Exception e) {
+//            e.printStackTrace(listener.getLogger());
+//            return false;
+//        }
     }
 
     public BuildStepMonitor getRequiredMonitorService() {
