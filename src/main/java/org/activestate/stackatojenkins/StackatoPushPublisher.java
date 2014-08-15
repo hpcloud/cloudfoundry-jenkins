@@ -6,8 +6,11 @@ import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
+import hudson.model.Result;
 import hudson.tasks.BuildStepDescriptor;
-import hudson.tasks.Builder;
+import hudson.tasks.BuildStepMonitor;
+import hudson.tasks.Publisher;
+import hudson.tasks.Recorder;
 import net.sf.json.JSONObject;
 import org.cloudfoundry.client.lib.CloudCredentials;
 import org.cloudfoundry.client.lib.CloudFoundryClient;
@@ -21,7 +24,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-public class StackatoPushBuilder extends Builder {
+public class StackatoPushPublisher extends Recorder {
 
     public final String target;
     public final String organization;
@@ -31,8 +34,8 @@ public class StackatoPushBuilder extends Builder {
     public final String uri;
 
     @DataBoundConstructor
-    public StackatoPushBuilder(String target, String organization, String cloudSpace,
-                               String username, String password, String uri) {
+    public StackatoPushPublisher(String target, String organization, String cloudSpace,
+                                 String username, String password, String uri) {
         this.target = target;
         this.organization = organization;
         this.cloudSpace = cloudSpace;
@@ -43,6 +46,9 @@ public class StackatoPushBuilder extends Builder {
 
     @Override
     public boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener) {
+        // We don't want to push if the build failed
+        if (build.getResult().isWorseThan(Result.SUCCESS))
+            return true;
 
         try {
             String appName = build.getProject().getDisplayName();
@@ -93,11 +99,16 @@ public class StackatoPushBuilder extends Builder {
         }
     }
 
+    public BuildStepMonitor getRequiredMonitorService() {
+        return BuildStepMonitor.NONE;
+    }
+
+
     @Extension
-    public static final class DescriptorImpl extends BuildStepDescriptor<Builder> {
+    public static final class DescriptorImpl extends BuildStepDescriptor<Publisher> {
 
         @Override
-        public boolean isApplicable(Class<? extends AbstractProject> aClass) {
+        public boolean isApplicable(Class<? extends AbstractProject> jobType) {
             return true;
         }
 
