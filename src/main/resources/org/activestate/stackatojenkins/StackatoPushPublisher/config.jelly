@@ -16,10 +16,42 @@
   <f:entry title="Password" field="password">
     <f:password/>
   </f:entry>
-  <f:entry title="URI" field="uri">
-    <f:textbox/>
-  </f:entry>
-  <f:entry title="Application Path" field="appDir">
-    <f:textbox/>
-  </f:entry>
+
+  <f:optionalBlock name="optionalManifest" title="Read app info from manifest.yml file" negative="true">
+    <f:entry title="Application Name" field="appName">
+      <f:textbox/>
+    </f:entry>
+    <f:entry title="Memory" field="memory">
+      <f:textbox/>
+    </f:entry>
+    <f:entry title="Hostname" field="hostname">
+      <f:textbox/>
+    </f:entry>
+    <f:entry title="Instances" field="instances">
+      <f:textbox/>
+    </f:entry>
+    <f:entry title="Timeout" field="timeout">
+      <f:textbox/>
+    </f:entry>
+
+    <f:advanced>
+      <f:entry title="Do not create a route" field="noRoute">
+        <f:checkbox/>
+      </f:entry>
+      <f:entry title="Application Path" field="appPath">
+        <f:textbox/>
+      </f:entry>
+      <f:entry title="Custom buildpack" field="buildpack">
+        <f:textbox/>
+      </f:entry>
+      <f:entry title="Custom start command" field="command">
+        <f:textbox/>
+      </f:entry>
+      <f:entry title="Domain" field="domain">
+        <f:textbox/>
+      </f:entry>
+    </f:advanced>
+
+  </f:optionalBlock>
+
 </j:jelly>
