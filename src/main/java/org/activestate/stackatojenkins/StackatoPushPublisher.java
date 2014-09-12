@@ -85,9 +85,9 @@ public class StackatoPushPublisher extends Recorder {
             }
             URL targetUrl = new URL(fullTarget);
 
-            String[] split = fullTarget.split(".");
+            String[] split = fullTarget.split("\\.");
             String domain = split[split.length-2] + "." + split[split.length-1];
-            DeploymentInfo deploymentInfo = new DeploymentInfo(listener, optionalManifest, jenkinsBuildName, domain);
+            DeploymentInfo deploymentInfo = new DeploymentInfo(build, listener, optionalManifest, jenkinsBuildName, domain);
             String appName = deploymentInfo.getAppName();
             String uri = deploymentInfo.getHostname() + "." + deploymentInfo.getDomain();
 

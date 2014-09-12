@@ -1,10 +1,10 @@
 package org.activestate.stackatojenkins;
 
+import hudson.FilePath;
+import hudson.model.AbstractBuild;
 import org.yaml.snakeyaml.Yaml;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.List;
 import java.util.Map;
 
@@ -12,9 +12,11 @@ public class ManifestReader {
 
     public static final String DEFAULT_PATH = "manifest.yml";
 
+    private AbstractBuild build;
     private List<Map<String, Object>> applicationList;
 
-    public ManifestReader() throws ManifestParsingException, FileNotFoundException {
+    public ManifestReader(AbstractBuild build) throws ManifestParsingException, IOException, InterruptedException {
+        this.build = build;
         this.applicationList = parseManifest();
     }
 
@@ -54,9 +56,11 @@ public class ManifestReader {
     /**
      * Returns the list of maps describing the applications.
      */
-    private List<Map<String, Object>> parseManifest() throws FileNotFoundException, ManifestParsingException {
+    private List<Map<String, Object>> parseManifest() throws IOException, ManifestParsingException, InterruptedException {
         InputStream inputStream;
-        inputStream = new FileInputStream(DEFAULT_PATH);
+        FilePath appPath = new FilePath(build.getWorkspace(), DEFAULT_PATH);
+        File appFile = new File(appPath.toURI());
+        inputStream = new FileInputStream(appFile);
 
         Yaml yaml = new Yaml();
         Object parsedYaml = yaml.load(inputStream);
@@ -75,5 +79,4 @@ public class ManifestReader {
         }
         return applicationList;
     }
-
 }

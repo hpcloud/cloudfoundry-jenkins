@@ -1,9 +1,11 @@
 package org.activestate.stackatojenkins;
 
+import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import org.activestate.stackatojenkins.StackatoPushPublisher.OptionalManifest;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Map;
 
 public class DeploymentInfo {
@@ -23,29 +25,33 @@ public class DeploymentInfo {
     private String command;
     private String domain;
 
-    public DeploymentInfo(BuildListener listener, OptionalManifest optionalManifest,
+    public DeploymentInfo(AbstractBuild build, BuildListener listener, OptionalManifest optionalManifest,
                           String jenkinsBuildName, String defaultDomain)
-            throws FileNotFoundException, ManifestParsingException {
+            throws IOException, ManifestParsingException, InterruptedException {
 
         // Read manifest.yml
         if (optionalManifest == null) {
-            ManifestReader manifestReader = new ManifestReader();
+            ManifestReader manifestReader = new ManifestReader(build);
             Map<String, Object> applicationInfo = manifestReader.getApplicationInfo(null);
+            listener.getLogger().println(applicationInfo.toString());
 
             // Important optional attributes, we should warn in case they are missing.
 
-            appName = (String) applicationInfo.get("appName");
+            appName = (String) applicationInfo.get("name");
             if (appName == null) {
                 listener.getLogger().
                         println("WARNING: No application name. Using Jenkins build name: " + jenkinsBuildName);
                 appName = jenkinsBuildName;
             }
 
-            Integer memory = (Integer) applicationInfo.get("memory");
-            if (memory == null) {
+            int memory = 0;
+            String memString = (String) applicationInfo.get("mem");
+            if (memString == null) {
                 listener.getLogger().
                         println("WARNING: No manifest value for memory. Using default value: " + DEFAULT_MEMORY);
                 memory = DEFAULT_MEMORY;
+            } else if (memString.toLowerCase().endsWith("m")) {
+                memory = Integer.parseInt(memString.substring(0, memString.length()-1));
             }
             this.memory = memory;
 
