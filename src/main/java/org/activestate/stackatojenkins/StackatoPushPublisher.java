@@ -13,6 +13,7 @@ import hudson.tasks.Publisher;
 import hudson.tasks.Recorder;
 import org.cloudfoundry.client.lib.CloudCredentials;
 import org.cloudfoundry.client.lib.CloudFoundryClient;
+import org.cloudfoundry.client.lib.StartingInfo;
 import org.cloudfoundry.client.lib.domain.Staging;
 import org.kohsuke.stapler.DataBoundConstructor;
 
@@ -89,13 +90,13 @@ public class StackatoPushPublisher extends Recorder {
             String domain = split[split.length-2] + "." + split[split.length-1];
             DeploymentInfo deploymentInfo = new DeploymentInfo(build, listener, optionalManifest, jenkinsBuildName, domain);
             String appName = deploymentInfo.getAppName();
-            String uri = deploymentInfo.getHostname() + "." + deploymentInfo.getDomain();
+            String uri = "https://" + deploymentInfo.getHostname() + "." + deploymentInfo.getDomain();
 
-            listener.getLogger().println("Logging to stackato with:" + username + "/" + password);
-            listener.getLogger().println("Target URL:" + targetUrl.getHost());
-            listener.getLogger().println("Org:" + organization);
-            listener.getLogger().println("Space:" + cloudSpace);
-            listener.getLogger().println("Calculated uri:" + uri);
+            listener.getLogger().println("Logging to stackato with: " + username + "/" + password);
+            listener.getLogger().println("Target URL: " + targetUrl.getHost());
+            listener.getLogger().println("Org: " + organization);
+            listener.getLogger().println("Space: " + cloudSpace);
+            listener.getLogger().println("Calculated uri: " + uri);
 
 
             CloudCredentials credentials = new CloudCredentials(username, password);
@@ -117,14 +118,22 @@ public class StackatoPushPublisher extends Recorder {
             client.uploadApplication(appName, appFile);
 
             listener.getLogger().println("Starting application.");
-            client.startApplication(appName);
+            StartingInfo startingInfo = client.startApplication(appName);
 
-            listener.getLogger().println("Application will be running at " + uri);
+            int offset = 0;
+            String stagingLogs = client.getStagingLogs(startingInfo, offset);
+            while (stagingLogs != null) {
+                listener.getLogger().println(stagingLogs);
+                offset += stagingLogs.length();
+                stagingLogs = client.getStagingLogs(startingInfo, offset);
+            }
+
+            listener.getLogger().println("Application is now running at " + uri);
 
             listener.getLogger().println("Stackato push successful.");
             return true;
         } catch (MalformedURLException e) {
-            listener.getLogger().println("The target URL is not valid: " + e.getMessage());
+            listener.getLogger().println("ERROR: The target URL is not valid: " + e.getMessage());
             return false;
         } catch (ManifestParsingException e) {
             listener.getLogger().println("ERROR: Could not parse manifest: " + e.getMessage());
