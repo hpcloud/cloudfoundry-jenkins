@@ -14,7 +14,7 @@ import hudson.tasks.Recorder;
 import org.cloudfoundry.client.lib.CloudCredentials;
 import org.cloudfoundry.client.lib.CloudFoundryClient;
 import org.cloudfoundry.client.lib.StartingInfo;
-import org.cloudfoundry.client.lib.domain.Staging;
+import org.cloudfoundry.client.lib.domain.*;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.io.File;
@@ -26,6 +26,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class StackatoPushPublisher extends Recorder {
+
+    private final int TIMEOUT = 120;
 
     public final String target;
     public final String organization;
@@ -87,7 +89,7 @@ public class StackatoPushPublisher extends Recorder {
             URL targetUrl = new URL(fullTarget);
 
             String[] split = fullTarget.split("\\.");
-            String domain = split[split.length-2] + "." + split[split.length-1];
+            String domain = split[split.length - 2] + "." + split[split.length - 1];
             DeploymentInfo deploymentInfo = new DeploymentInfo(build, listener, optionalManifest, jenkinsBuildName, domain);
             String appName = deploymentInfo.getAppName();
             String uri = "https://" + deploymentInfo.getHostname() + "." + deploymentInfo.getDomain();
@@ -120,13 +122,46 @@ public class StackatoPushPublisher extends Recorder {
             listener.getLogger().println("Starting application.");
             StartingInfo startingInfo = client.startApplication(appName);
 
-            int offset = 0;
-            String stagingLogs = client.getStagingLogs(startingInfo, offset);
-            while (stagingLogs != null) {
-                listener.getLogger().println(stagingLogs);
-                offset += stagingLogs.length();
-                stagingLogs = client.getStagingLogs(startingInfo, offset);
+            // Start printing the staging logs
+            // First, try streamLogs()
+            JenkinsApplicationLogListener logListener = new JenkinsApplicationLogListener(listener);
+            client.streamLogs(appName, logListener);
+
+            CloudApplication app = client.getApplication(appName);
+
+            int running = 0;
+            int totalInstances = 0;
+            for (int tries = 0; tries < TIMEOUT; tries++) {
+                running = 0;
+                InstancesInfo instances = client.getApplicationInstances(app);
+                if (instances != null) {
+                    List<InstanceInfo> listInstances = instances.getInstances();
+                    totalInstances = listInstances.size();
+                    for (InstanceInfo instance : listInstances) {
+                        if (instance.getState() == InstanceState.RUNNING) {
+                            running++;
+                        }
+                    }
+                    if (running == totalInstances) {
+                        break;
+                    }
+                }
+                Thread.sleep(1000);
             }
+
+            String instanceGrammar = "instances";
+            if (running == 1)
+                instanceGrammar = "instance";
+            listener.getLogger().println(running + " " + instanceGrammar + " running out of " + totalInstances);
+
+            // In case of failure, try getStagingLogs()
+//            int offset = 0;
+//            String stagingLogs = client.getStagingLogs(startingInfo, offset);
+//            while (stagingLogs != null) {
+//                listener.getLogger().println(stagingLogs);
+//                offset += stagingLogs.length();
+//                stagingLogs = client.getStagingLogs(startingInfo, offset);
+//            }
 
             listener.getLogger().println("Application is now running at " + uri);
 

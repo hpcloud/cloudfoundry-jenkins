@@ -96,8 +96,22 @@ public class DeploymentInfo {
         // Read Jenkins configuration
         else {
             this.appName = optionalManifest.appName;
+            if (appName.equals("")) {
+                listener.getLogger().
+                        println("WARNING: No application name. Using Jenkins build name: " + jenkinsBuildName);
+                appName = jenkinsBuildName;
+            }
             this.memory = optionalManifest.memory;
+            if (memory == 0) {
+                listener.getLogger().
+                        println("WARNING: Missing value for memory. Using default value: " + DEFAULT_MEMORY);
+                memory = DEFAULT_MEMORY;
+            }
             this.hostname = optionalManifest.hostname;
+            if (hostname.equals("")) {
+                listener.getLogger().println("WARNING: Missing value for hostname. Using app name: " + appName);
+                hostname = appName;
+            }
             this.instances = optionalManifest.instances;
             this.timeout = optionalManifest.timeout;
             this.noRoute = optionalManifest.noRoute;
