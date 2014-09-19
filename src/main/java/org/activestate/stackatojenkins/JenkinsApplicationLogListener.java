@@ -4,9 +4,6 @@ import hudson.model.BuildListener;
 import org.cloudfoundry.client.lib.ApplicationLogListener;
 import org.cloudfoundry.client.lib.domain.ApplicationLog;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class JenkinsApplicationLogListener implements ApplicationLogListener {
 
     private BuildListener listener;

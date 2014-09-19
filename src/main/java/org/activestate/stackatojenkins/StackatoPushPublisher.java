@@ -124,8 +124,21 @@ public class StackatoPushPublisher extends Recorder {
 
             // Start printing the staging logs
             // First, try streamLogs()
-            JenkinsApplicationLogListener logListener = new JenkinsApplicationLogListener(listener);
-            client.streamLogs(appName, logListener);
+            try {
+                JenkinsApplicationLogListener logListener = new JenkinsApplicationLogListener(listener);
+                client.streamLogs(appName, logListener);
+            } catch (Exception e) {
+                // In case of failure, try getStagingLogs()
+                listener.getLogger().println("WARNING: Exception occurred trying to get staging logs via websocket. " +
+                        "Switching to alternate method.");
+                int offset = 0;
+                String stagingLogs = client.getStagingLogs(startingInfo, offset);
+                while (stagingLogs != null) {
+                    listener.getLogger().println(stagingLogs);
+                    offset += stagingLogs.length();
+                    stagingLogs = client.getStagingLogs(startingInfo, offset);
+                }
+            }
 
             CloudApplication app = client.getApplication(appName);
 
@@ -153,15 +166,6 @@ public class StackatoPushPublisher extends Recorder {
             if (running == 1)
                 instanceGrammar = "instance";
             listener.getLogger().println(running + " " + instanceGrammar + " running out of " + totalInstances);
-
-            // In case of failure, try getStagingLogs()
-//            int offset = 0;
-//            String stagingLogs = client.getStagingLogs(startingInfo, offset);
-//            while (stagingLogs != null) {
-//                listener.getLogger().println(stagingLogs);
-//                offset += stagingLogs.length();
-//                stagingLogs = client.getStagingLogs(startingInfo, offset);
-//            }
 
             listener.getLogger().println("Application is now running at " + uri);
 
