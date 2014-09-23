@@ -107,21 +107,38 @@ public class StackatoPushPublisher extends Recorder {
 
             listener.getLogger().println("Pushing " + appName + " app to " + fullTarget);
 
-            listener.getLogger().println("Creating new app.");
-            Staging staging = new Staging();
-            List<String> uris = new ArrayList<String>();
-            uris.add(uri);
-            List<String> services = new ArrayList<String>();
-            client.createApplication(appName, staging, deploymentInfo.getMemory(), uris, services);
+            List<CloudApplication> existingApps = client.getApplications();
+            boolean alreadyExists = false;
+            for (CloudApplication app : existingApps) {
+                if (app.getName().equals(appName)) {
+                    alreadyExists = true;
+                    listener.getLogger().println("App already exists, skipping creation.");
+                    break;
+                }
+            }
+
+            if (!alreadyExists) {
+                listener.getLogger().println("Creating new app.");
+                Staging staging = new Staging();
+                List<String> uris = new ArrayList<String>();
+                uris.add(uri);
+                List<String> services = new ArrayList<String>();
+                client.createApplication(appName, staging, deploymentInfo.getMemory(), uris, services);
+            }
 
             listener.getLogger().println("Pushing app bits.");
             FilePath appPath = new FilePath(build.getWorkspace(), deploymentInfo.getAppPath());
             File appFile = new File(appPath.toURI());
             client.uploadApplication(appName, appFile);
 
-            listener.getLogger().println("Starting application.");
-            StartingInfo startingInfo = client.startApplication(appName);
-
+            StartingInfo startingInfo;
+            if (!alreadyExists) {
+                listener.getLogger().println("Starting application.");
+                startingInfo = client.startApplication(appName);
+            } else {
+                listener.getLogger().println("Restarting application.");
+                startingInfo = client.restartApplication(appName);
+            }
             // Start printing the staging logs
             // First, try streamLogs()
             try {
