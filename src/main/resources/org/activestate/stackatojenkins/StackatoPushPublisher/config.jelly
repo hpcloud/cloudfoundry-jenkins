@@ -1,6 +1,5 @@
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
-         xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
   <f:entry title="Target" field="target">
     <f:textbox/>
   </f:entry>
@@ -10,45 +9,46 @@
   <f:entry title="Space" field="cloudSpace">
     <f:textbox/>
   </f:entry>
-  <f:entry title="Username/Email" field="username">
+  <f:entry title="Username or Email" field="username">
     <f:textbox/>
   </f:entry>
   <f:entry title="Password" field="password">
     <f:password/>
   </f:entry>
 
-  <f:optionalBlock name="optionalManifest" title="Read app info from manifest.yml file" negative="true">
+  <f:optionalBlock field="optionalManifest" name="optionalManifest" title="Read app info from manifest.yml file"
+                   negative="true" checked="${instance.optionalManifest == null}">
     <f:entry title="Application Name" field="appName">
-      <f:textbox/>
+      <f:textbox default="${instance.optionalManifest.appName}"/>
     </f:entry>
     <f:entry title="Memory" field="memory">
-      <f:textbox/>
+      <f:textbox default="${instance.optionalManifest.memory}"/>
     </f:entry>
     <f:entry title="Custom buildpack" field="buildpack">
-      <f:textbox/>
+      <f:textbox default="${instance.optionalManifest.buildpack}"/>
     </f:entry>
     <f:entry title="Hostname" field="hostname">
-      <f:textbox/>
+      <f:textbox default="${instance.optionalManifest.hostname}"/>
     </f:entry>
     <f:entry title="Instances" field="instances">
-      <f:textbox/>
+      <f:textbox default="${instance.optionalManifest.instances}"/>
     </f:entry>
     <f:entry title="Timeout" field="timeout">
-      <f:textbox/>
+      <f:textbox default="${instance.optionalManifest.timeout}"/>
     </f:entry>
 
     <f:advanced>
       <f:entry title="Do not create a route" field="noRoute">
-        <f:checkbox/>
+        <f:checkbox checked="${instance.optionalManifest.noRoute}"/>
       </f:entry>
       <f:entry title="Application Path" field="appPath">
-        <f:textbox/>
+        <f:textbox default="${instance.optionalManifest.appPath}"/>
       </f:entry>
       <f:entry title="Start command" field="command">
-        <f:textbox/>
+        <f:textbox default="${instance.optionalManifest.command}"/>
       </f:entry>
       <f:entry title="Domain" field="domain">
-        <f:textbox/>
+        <f:textbox default="${instance.optionalManifest.domain}"/>
       </f:entry>
     </f:advanced>
 
