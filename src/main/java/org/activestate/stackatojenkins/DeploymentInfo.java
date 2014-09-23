@@ -4,7 +4,6 @@ import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import org.activestate.stackatojenkins.StackatoPushPublisher.OptionalManifest;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Map;
 

@@ -33,7 +33,7 @@ public class ManifestReader {
     }
 
     /**
-     * Returns the Map of explusive deployment info of an app, given its name.
+     * Returns the Map of exclusive deployment info of an app, given its name.
      * If no name given (null), will use the first app.
      */
     private Map<String, Object> getApplicationMap(String appName) throws ManifestParsingException {
