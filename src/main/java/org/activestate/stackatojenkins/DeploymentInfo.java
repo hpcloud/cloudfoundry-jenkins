@@ -44,7 +44,7 @@ public class DeploymentInfo {
             }
 
             int memory = 0;
-            String memString = (String) applicationInfo.get("mem");
+            String memString = (String) applicationInfo.get("memory");
             if (memString == null) {
                 listener.getLogger().
                         println("WARNING: No manifest value for memory. Using default value: " + DEFAULT_MEMORY);
