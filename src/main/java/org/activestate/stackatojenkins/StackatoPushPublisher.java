@@ -36,6 +36,8 @@ public class StackatoPushPublisher extends Recorder {
     public final String password;
     public final OptionalManifest optionalManifest;
 
+    private String appURI;
+
     @DataBoundConstructor
     public StackatoPushPublisher(String target, String organization, String cloudSpace,
                                  String username, String password,
@@ -92,13 +94,14 @@ public class StackatoPushPublisher extends Recorder {
             String domain = split[split.length - 2] + "." + split[split.length - 1];
             DeploymentInfo deploymentInfo = new DeploymentInfo(build, listener, optionalManifest, jenkinsBuildName, domain);
             String appName = deploymentInfo.getAppName();
-            String uri = "https://" + deploymentInfo.getHostname() + "." + deploymentInfo.getDomain();
+            setAppURI("https://" + deploymentInfo.getHostname() + "." + deploymentInfo.getDomain());
+
 
             listener.getLogger().println("Logging to stackato with: " + username + "/" + password);
             listener.getLogger().println("Target URL: " + targetUrl.getHost());
             listener.getLogger().println("Org: " + organization);
             listener.getLogger().println("Space: " + cloudSpace);
-            listener.getLogger().println("Calculated uri: " + uri);
+            listener.getLogger().println("Calculated uri: " + getAppURI());
 
 
             CloudCredentials credentials = new CloudCredentials(username, password);
@@ -121,7 +124,7 @@ public class StackatoPushPublisher extends Recorder {
                 listener.getLogger().println("Creating new app.");
                 Staging staging = new Staging();
                 List<String> uris = new ArrayList<String>();
-                uris.add(uri);
+                uris.add(getAppURI());
                 List<String> services = new ArrayList<String>();
                 client.createApplication(appName, staging, deploymentInfo.getMemory(), uris, services);
             }
@@ -184,7 +187,7 @@ public class StackatoPushPublisher extends Recorder {
                 instanceGrammar = "instance";
             listener.getLogger().println(running + " " + instanceGrammar + " running out of " + totalInstances);
 
-            listener.getLogger().println("Application is now running at " + uri);
+            listener.getLogger().println("Application is now running at " + getAppURI());
 
             listener.getLogger().println("Stackato push successful.");
             return true;
@@ -208,6 +211,14 @@ public class StackatoPushPublisher extends Recorder {
 
     public BuildStepMonitor getRequiredMonitorService() {
         return BuildStepMonitor.NONE;
+    }
+
+    public String getAppURI() {
+        return appURI;
+    }
+
+    public void setAppURI(String appURI) {
+        this.appURI = appURI;
     }
 
     public static class OptionalManifest {

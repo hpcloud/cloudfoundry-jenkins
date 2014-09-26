@@ -23,6 +23,13 @@
       <artifactId>snakeyaml</artifactId>
       <version>1.14</version>
     </dependency>
+
+    <dependency>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>fluent-hc</artifactId>
+      <version>4.2.5</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <repositories>
