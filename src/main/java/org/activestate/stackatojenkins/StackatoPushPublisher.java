@@ -15,6 +15,7 @@ import org.cloudfoundry.client.lib.CloudCredentials;
 import org.cloudfoundry.client.lib.CloudFoundryClient;
 import org.cloudfoundry.client.lib.StartingInfo;
 import org.cloudfoundry.client.lib.domain.*;
+import org.cloudfoundry.client.lib.org.springframework.web.client.ResourceAccessException;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.io.File;
@@ -23,6 +24,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class StackatoPushPublisher extends Recorder {
@@ -105,7 +107,17 @@ public class StackatoPushPublisher extends Recorder {
 
 
             CloudCredentials credentials = new CloudCredentials(username, password);
-            CloudFoundryClient client = new CloudFoundryClient(credentials, targetUrl, organization, cloudSpace);
+            CloudFoundryClient client;
+//            try {
+                client = new CloudFoundryClient(credentials, targetUrl, organization, cloudSpace);
+//            } catch (Exception e) {
+//                listener.getLogger().println("OH SHIT SON");
+//                listener.getLogger().println(e.toString());
+//                listener.getLogger().println(e.getClass());
+//                listener.getLogger().println(e.getMessage());
+//                listener.getLogger().println(Arrays.toString(e.getStackTrace()));
+//                return false;
+//            }
             client.login();
 
             listener.getLogger().println("Pushing " + appName + " app to " + fullTarget);
@@ -188,11 +200,14 @@ public class StackatoPushPublisher extends Recorder {
             listener.getLogger().println(running + " " + instanceGrammar + " running out of " + totalInstances);
 
             listener.getLogger().println("Application is now running at " + getAppURI());
-
             listener.getLogger().println("Stackato push successful.");
             return true;
+
         } catch (MalformedURLException e) {
             listener.getLogger().println("ERROR: The target URL is not valid: " + e.getMessage());
+            return false;
+        } catch (ResourceAccessException e) {
+            listener.getLogger().println("ERROR: Unknown host: " + e.getMessage());
             return false;
         } catch (ManifestParsingException e) {
             listener.getLogger().println("ERROR: Could not parse manifest: " + e.getMessage());
