@@ -3,13 +3,13 @@ package org.activestate.stackatojenkins;
 import hudson.FilePath;
 import hudson.model.AbstractBuild;
 import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.scanner.ScannerException;
 
 import java.io.*;
 import java.util.List;
 import java.util.Map;
 
 public class ManifestReader {
-
 
 
     private File manifestFile;
@@ -68,7 +68,12 @@ public class ManifestReader {
     private List<Map<String, Object>> parseManifest() throws IOException, ManifestParsingException, InterruptedException {
         InputStream inputStream = new FileInputStream(manifestFile);
         Yaml yaml = new Yaml();
-        Object parsedYaml = yaml.load(inputStream);
+        Object parsedYaml;
+        try {
+            parsedYaml = yaml.load(inputStream);
+        } catch (ScannerException e) {
+            throw new ManifestParsingException("Malformed YAML file: " + manifestFile.getPath());
+        }
         Map<String, List<Map<String, Object>>> parsedYamlMap;
         if (parsedYaml instanceof Map<?, ?>) {
             parsedYamlMap = (Map<String, List<Map<String, Object>>>) parsedYaml;
@@ -79,8 +84,6 @@ public class ManifestReader {
         List<Map<String, Object>> applicationList = parsedYamlMap.get("applications");
         if (applicationList == null) {
             throw new ManifestParsingException("Manifest file does not start with an 'applications' block.");
-        } else if (applicationList.size() == 0) {
-            throw new ManifestParsingException("The 'applications' block is empty.");
         }
         return applicationList;
     }
