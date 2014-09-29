@@ -33,6 +33,15 @@ public class ManifestReader {
     }
 
     /**
+     * Alias for getApplicationInfo(String appName) that returns info for the first app
+     *
+     * @return the deployment info
+     */
+    public Map<String, Object> getApplicationInfo() throws ManifestParsingException {
+        return getApplicationMap(null);
+    }
+
+    /**
      * Returns the Map of exclusive deployment info of an app, given its name.
      * If no name given (null), will use the first app.
      */
