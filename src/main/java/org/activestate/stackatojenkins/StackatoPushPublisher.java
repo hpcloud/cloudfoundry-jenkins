@@ -13,6 +13,7 @@ import hudson.tasks.Publisher;
 import hudson.tasks.Recorder;
 import org.cloudfoundry.client.lib.CloudCredentials;
 import org.cloudfoundry.client.lib.CloudFoundryClient;
+import org.cloudfoundry.client.lib.CloudFoundryException;
 import org.cloudfoundry.client.lib.StartingInfo;
 import org.cloudfoundry.client.lib.domain.*;
 import org.cloudfoundry.client.lib.org.springframework.web.client.ResourceAccessException;
@@ -94,7 +95,8 @@ public class StackatoPushPublisher extends Recorder {
 
             String[] split = fullTarget.split("\\.");
             String domain = split[split.length - 2] + "." + split[split.length - 1];
-            DeploymentInfo deploymentInfo = new DeploymentInfo(build, listener, optionalManifest, jenkinsBuildName, domain);
+            DeploymentInfo deploymentInfo =
+                    new DeploymentInfo(build, listener, optionalManifest, jenkinsBuildName, domain);
             String appName = deploymentInfo.getAppName();
             setAppURI("https://" + deploymentInfo.getHostname() + "." + deploymentInfo.getDomain());
 
@@ -208,6 +210,13 @@ public class StackatoPushPublisher extends Recorder {
             return false;
         } catch (ResourceAccessException e) {
             listener.getLogger().println("ERROR: Unknown host: " + e.getMessage());
+            return false;
+        } catch (CloudFoundryException e) {
+            if (e.getMessage().equals("403 Access token denied.")) {
+                listener.getLogger().println("ERROR: Wrong username or password: " + e.getMessage());
+            } else {
+                listener.getLogger().println("ERROR: Unknown CloudFoundryException: " + e.getMessage());
+            }
             return false;
         } catch (ManifestParsingException e) {
             listener.getLogger().println("ERROR: Could not parse manifest: " + e.getMessage());

@@ -30,8 +30,8 @@ public class StackatoPushPublisherTest {
     public void testPerform() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
         project.setScm(new ExtractResourceSCM(getClass().getResource("hello-java.zip")));
-        StackatoPushPublisher stackato = new StackatoPushPublisher(TEST_TARGET, TEST_ORG, TEST_SPACE,
-                TEST_USERNAME, TEST_PASSWORD, null);
+        StackatoPushPublisher stackato =
+                new StackatoPushPublisher(TEST_TARGET, TEST_ORG, TEST_SPACE, TEST_USERNAME, TEST_PASSWORD, null);
         project.getPublishersList().add(stackato);
         FreeStyleBuild build = project.scheduleBuild2(0).get();
         System.out.println(build.getDisplayName() + " completed");
@@ -61,12 +61,26 @@ public class StackatoPushPublisherTest {
         project.getPublishersList().add(stackato);
         FreeStyleBuild build = project.scheduleBuild2(0).get();
         System.out.println(build.getDisplayName() + " completed");
-
         assertTrue("Build succeeded where it should have failed", build.getResult().isWorseOrEqualTo(Result.FAILURE));
 
         String s = FileUtils.readFileToString(build.getLogFile());
         System.out.println(s);
-
         assertTrue("Build did not write error message", s.contains("ERROR: Unknown host"));
+    }
+
+    @Test
+    public void testPerformWrongCredentials() throws Exception {
+        FreeStyleProject project = j.createFreeStyleProject();
+        project.setScm(new ExtractResourceSCM(getClass().getResource("hello-java.zip")));
+        StackatoPushPublisher stackato = new StackatoPushPublisher(TEST_TARGET, TEST_ORG, TEST_SPACE,
+                "NotAdmin", "BadPassword", null);
+        project.getPublishersList().add(stackato);
+        FreeStyleBuild build = project.scheduleBuild2(0).get();
+        System.out.println(build.getDisplayName() + " completed");
+        assertTrue("Build succeeded where it should have failed", build.getResult().isWorseOrEqualTo(Result.FAILURE));
+
+        String s = FileUtils.readFileToString(build.getLogFile());
+        System.out.println(s);
+        assertTrue("Build did not write error message", s.contains("ERROR: Wrong username or password"));
     }
 }
