@@ -1,17 +1,21 @@
 package org.activestate.stackatojenkins;
 
+import hudson.FilePath;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import org.activestate.stackatojenkins.StackatoPushPublisher.OptionalManifest;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 
 public class DeploymentInfo {
 
-    public static final Integer DEFAULT_MEMORY = 512;
-    public static final Integer DEFAULT_INSTANCES = 1;
-    public static final Integer DEFAULT_TIMEOUT = 60;
+    private static final String DEFAULT_MANIFEST_PATH = "manifest.yml";
+
+    private static final Integer DEFAULT_MEMORY = 512;
+    private static final Integer DEFAULT_INSTANCES = 1;
+    private static final Integer DEFAULT_TIMEOUT = 60;
 
     private String appName;
     private int memory;
@@ -30,7 +34,9 @@ public class DeploymentInfo {
 
         // Read manifest.yml
         if (optionalManifest == null) {
-            ManifestReader manifestReader = new ManifestReader(build);
+            FilePath appPath = new FilePath(build.getWorkspace(), DEFAULT_MANIFEST_PATH);
+            File appFile = new File(appPath.toURI());
+            ManifestReader manifestReader = new ManifestReader(appFile);
             Map<String, Object> applicationInfo = manifestReader.getApplicationInfo(null);
             listener.getLogger().println(applicationInfo.toString());
 

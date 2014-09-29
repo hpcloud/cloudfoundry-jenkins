@@ -10,13 +10,13 @@ import java.util.Map;
 
 public class ManifestReader {
 
-    public static final String DEFAULT_PATH = "manifest.yml";
 
-    private AbstractBuild build;
+
+    private File manifestFile;
     private List<Map<String, Object>> applicationList;
 
-    public ManifestReader(AbstractBuild build) throws ManifestParsingException, IOException, InterruptedException {
-        this.build = build;
+    public ManifestReader(File manifestFile) throws ManifestParsingException, IOException, InterruptedException {
+        this.manifestFile = manifestFile;
         this.applicationList = parseManifest();
     }
 
@@ -57,18 +57,14 @@ public class ManifestReader {
      * Returns the list of maps describing the applications.
      */
     private List<Map<String, Object>> parseManifest() throws IOException, ManifestParsingException, InterruptedException {
-        InputStream inputStream;
-        FilePath appPath = new FilePath(build.getWorkspace(), DEFAULT_PATH);
-        File appFile = new File(appPath.toURI());
-        inputStream = new FileInputStream(appFile);
-
+        InputStream inputStream = new FileInputStream(manifestFile);
         Yaml yaml = new Yaml();
         Object parsedYaml = yaml.load(inputStream);
         Map<String, List<Map<String, Object>>> parsedYamlMap;
         if (parsedYaml instanceof Map<?, ?>) {
             parsedYamlMap = (Map<String, List<Map<String, Object>>>) parsedYaml;
         } else {
-            throw new ManifestParsingException("Could not parse the manifest file into a map: " + DEFAULT_PATH);
+            throw new ManifestParsingException("Could not parse the manifest file into a map: " + manifestFile.getPath());
         }
 
         List<Map<String, Object>> applicationList = parsedYamlMap.get("applications");
