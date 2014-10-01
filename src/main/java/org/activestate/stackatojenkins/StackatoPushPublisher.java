@@ -100,7 +100,6 @@ public class StackatoPushPublisher extends Recorder {
             String appName = deploymentInfo.getAppName();
             setAppURI("https://" + deploymentInfo.getHostname() + "." + deploymentInfo.getDomain());
 
-
             listener.getLogger().println("Logging to stackato with: " + username + "/" + password);
             listener.getLogger().println("Target URL: " + targetUrl.getHost());
             listener.getLogger().println("Org: " + organization);
@@ -109,17 +108,7 @@ public class StackatoPushPublisher extends Recorder {
 
 
             CloudCredentials credentials = new CloudCredentials(username, password);
-            CloudFoundryClient client;
-//            try {
-                client = new CloudFoundryClient(credentials, targetUrl, organization, cloudSpace);
-//            } catch (Exception e) {
-//                listener.getLogger().println("OH SHIT SON");
-//                listener.getLogger().println(e.toString());
-//                listener.getLogger().println(e.getClass());
-//                listener.getLogger().println(e.getMessage());
-//                listener.getLogger().println(Arrays.toString(e.getStackTrace()));
-//                return false;
-//            }
+            CloudFoundryClient client = new CloudFoundryClient(credentials, targetUrl, organization, cloudSpace);
             client.login();
 
             listener.getLogger().println("Pushing " + appName + " app to " + fullTarget);
@@ -136,7 +125,7 @@ public class StackatoPushPublisher extends Recorder {
 
             if (!alreadyExists) {
                 listener.getLogger().println("Creating new app.");
-                Staging staging = new Staging();
+                Staging staging = new Staging(deploymentInfo.getCommand(), deploymentInfo.getBuildpack());
                 List<String> uris = new ArrayList<String>();
                 uris.add(getAppURI());
                 List<String> services = new ArrayList<String>();

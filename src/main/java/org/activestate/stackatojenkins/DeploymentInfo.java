@@ -93,7 +93,6 @@ public class DeploymentInfo {
             this.domain = domain;
 
             // Optional attributes with no defaults, it's ok if those are null.
-
             this.buildpack = (String) applicationInfo.get("buildpack");
             this.command = (String) applicationInfo.get("command");
             this.appPath = (String) applicationInfo.get("path");
@@ -117,13 +116,39 @@ public class DeploymentInfo {
                 listener.getLogger().println("WARNING: Missing value for hostname. Using app name: " + appName);
                 hostname = appName;
             }
+
             this.instances = optionalManifest.instances;
+            if (instances == 0) {
+                instances = DEFAULT_INSTANCES;
+            }
+
             this.timeout = optionalManifest.timeout;
+            if (timeout == 0) {
+                timeout = DEFAULT_TIMEOUT;
+            }
+
+            // noRoute's default value is already false, which is acceptable
             this.noRoute = optionalManifest.noRoute;
-            this.buildpack = optionalManifest.buildpack;
-            this.command = optionalManifest.command;
+
             this.domain = optionalManifest.domain;
+            if (domain.equals("")) {
+                domain = defaultDomain;
+            }
+
+            // These must be null, not just empty string
+            this.buildpack = optionalManifest.buildpack;
+            if (buildpack.equals("")) {
+                buildpack = null;
+            }
+            this.command = optionalManifest.command;
+            if (command.equals("")) {
+                command = null;
+            }
             this.appPath = optionalManifest.appPath;
+            if (appPath.equals("")) {
+                appPath = null;
+            }
+
         }
 
         // TODO: env vars and services
