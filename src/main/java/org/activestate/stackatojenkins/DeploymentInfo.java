@@ -34,8 +34,8 @@ public class DeploymentInfo {
 
         // Read manifest.yml
         if (optionalManifest == null) {
-            FilePath appPath = new FilePath(build.getWorkspace(), DEFAULT_MANIFEST_PATH);
-            File appFile = new File(appPath.toURI());
+            FilePath appFilePath = new FilePath(build.getWorkspace(), DEFAULT_MANIFEST_PATH);
+            File appFile = new File(appFilePath.toURI());
             ManifestReader manifestReader = new ManifestReader(appFile);
             Map<String, Object> applicationInfo = manifestReader.getApplicationInfo(null);
             listener.getLogger().println(applicationInfo.toString());
@@ -92,10 +92,15 @@ public class DeploymentInfo {
             }
             this.domain = domain;
 
+            String appPath = (String) applicationInfo.get("path");
+            if (appPath == null) {
+                appPath = ".";
+            }
+            this.appPath = appPath;
+
             // Optional attributes with no defaults, it's ok if those are null.
             this.buildpack = (String) applicationInfo.get("buildpack");
             this.command = (String) applicationInfo.get("command");
-            this.appPath = (String) applicationInfo.get("path");
         }
         // Read Jenkins configuration
         else {
@@ -146,7 +151,7 @@ public class DeploymentInfo {
             }
             this.appPath = optionalManifest.appPath;
             if (appPath.equals("")) {
-                appPath = null;
+                appPath = ".";
             }
 
         }

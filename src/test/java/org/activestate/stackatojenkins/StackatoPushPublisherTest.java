@@ -112,8 +112,7 @@ public class StackatoPushPublisherTest {
         FreeStyleProject project = j.createFreeStyleProject();
         project.setScm(new ExtractResourceSCM(getClass().getResource("heroku-node-js-sample.zip")));
         StackatoPushPublisher.OptionalManifest manifest =
-                new StackatoPushPublisher.OptionalManifest("heroku-node-js-sample", 512, "", 1, 60, false,
-                        ".",
+                new StackatoPushPublisher.OptionalManifest("heroku-node-js-sample", 512, "", 1, 60, false, "",
                         "https://github.com/heroku/heroku-buildpack-nodejs", "", "");
         StackatoPushPublisher stackato =
                 new StackatoPushPublisher(TEST_TARGET, TEST_ORG, TEST_SPACE, TEST_USERNAME, TEST_PASSWORD, manifest);
