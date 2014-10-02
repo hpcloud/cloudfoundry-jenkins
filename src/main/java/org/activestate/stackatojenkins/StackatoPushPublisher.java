@@ -132,6 +132,11 @@ public class StackatoPushPublisher extends Recorder {
                 client.createApplication(appName, staging, deploymentInfo.getMemory(), uris, services);
             }
 
+            int instances = deploymentInfo.getInstances();
+            if (instances > 1) {
+                client.updateApplicationInstances(appName, instances);
+            }
+
             listener.getLogger().println("Pushing app bits.");
             FilePath appPath = new FilePath(build.getWorkspace(), deploymentInfo.getAppPath());
             File appFile = new File(appPath.toURI());
@@ -145,6 +150,7 @@ public class StackatoPushPublisher extends Recorder {
                 listener.getLogger().println("Restarting application.");
                 startingInfo = client.restartApplication(appName);
             }
+
             // Start printing the staging logs
             // First, try streamLogs()
             try {
@@ -169,9 +175,9 @@ public class StackatoPushPublisher extends Recorder {
             int totalInstances = 0;
             for (int tries = 0; tries < TIMEOUT; tries++) {
                 running = 0;
-                InstancesInfo instances = client.getApplicationInstances(app);
-                if (instances != null) {
-                    List<InstanceInfo> listInstances = instances.getInstances();
+                InstancesInfo instancesInfo = client.getApplicationInstances(app);
+                if (instancesInfo != null) {
+                    List<InstanceInfo> listInstances = instancesInfo.getInstances();
                     totalInstances = listInstances.size();
                     for (InstanceInfo instance : listInstances) {
                         if (instance.getState() == InstanceState.RUNNING) {
