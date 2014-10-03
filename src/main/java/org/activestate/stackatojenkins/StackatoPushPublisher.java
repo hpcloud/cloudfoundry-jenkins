@@ -113,6 +113,7 @@ public class StackatoPushPublisher extends Recorder {
 
             listener.getLogger().println("Pushing " + appName + " app to " + fullTarget);
 
+            // Check if app already exists
             List<CloudApplication> existingApps = client.getApplications();
             boolean alreadyExists = false;
             for (CloudApplication app : existingApps) {
@@ -123,25 +124,30 @@ public class StackatoPushPublisher extends Recorder {
                 }
             }
 
+            // Create app if it doesn't exist
             if (!alreadyExists) {
                 listener.getLogger().println("Creating new app.");
-                Staging staging = new Staging(deploymentInfo.getCommand(), deploymentInfo.getBuildpack());
+                Staging staging = new Staging(deploymentInfo.getCommand(), deploymentInfo.getBuildpack(),
+                        null, deploymentInfo.getTimeout());
                 List<String> uris = new ArrayList<String>();
                 uris.add(getAppURI());
                 List<String> services = new ArrayList<String>();
                 client.createApplication(appName, staging, deploymentInfo.getMemory(), uris, services);
             }
 
+            // Change number of instances
             int instances = deploymentInfo.getInstances();
             if (instances > 1) {
                 client.updateApplicationInstances(appName, instances);
             }
 
+            // Push files
             listener.getLogger().println("Pushing app bits.");
             FilePath appPath = new FilePath(build.getWorkspace(), deploymentInfo.getAppPath());
             File appFile = new File(appPath.toURI());
             client.uploadApplication(appName, appFile);
 
+            // Start of restart application
             StartingInfo startingInfo;
             if (!alreadyExists) {
                 listener.getLogger().println("Starting application.");
@@ -171,6 +177,7 @@ public class StackatoPushPublisher extends Recorder {
 
             CloudApplication app = client.getApplication(appName);
 
+            // Keep checking to see if the app is running
             int running = 0;
             int totalInstances = 0;
             for (int tries = 0; tries < TIMEOUT; tries++) {
@@ -196,9 +203,18 @@ public class StackatoPushPublisher extends Recorder {
                 instanceGrammar = "instance";
             listener.getLogger().println(running + " " + instanceGrammar + " running out of " + totalInstances);
 
-            listener.getLogger().println("Application is now running at " + getAppURI());
-            listener.getLogger().println("Stackato push successful.");
-            return true;
+            if (running > 0) {
+                if (running != totalInstances) {
+                    listener.getLogger().println("WARNING: Some instances of the application are not running.");
+                }
+                listener.getLogger().println("Application is now running at " + getAppURI());
+                listener.getLogger().println("Stackato push successful.");
+                return true;
+            } else {
+                listener.getLogger().println("ERROR: The application failed to start after " + TIMEOUT + " seconds.");
+                listener.getLogger().println("Stackato push failed.");
+                return false;
+            }
 
         } catch (MalformedURLException e) {
             listener.getLogger().println("ERROR: The target URL is not valid: " + e.getMessage());

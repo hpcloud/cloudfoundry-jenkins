@@ -169,6 +169,28 @@ public class StackatoPushPublisherTest {
     }
 
     @Test
+    public void testPerformCustomTimeout() throws Exception {
+        FreeStyleProject project = j.createFreeStyleProject();
+        project.setScm(new ExtractResourceSCM(getClass().getResource("hello-java.zip")));
+        StackatoPushPublisher.OptionalManifest manifest =
+                new StackatoPushPublisher.OptionalManifest("hello-java", 512, "", 0, 4, false,
+                        "target/hello-java-1.0.war", "", "", "");
+        StackatoPushPublisher stackato =
+                new StackatoPushPublisher(TEST_TARGET, TEST_ORG, TEST_SPACE, TEST_USERNAME, TEST_PASSWORD, manifest);
+        project.getPublishersList().add(stackato);
+        FreeStyleBuild build = project.scheduleBuild2(0).get();
+        System.out.println(build.getDisplayName() + " completed");
+
+        String log = FileUtils.readFileToString(build.getLogFile());
+        System.out.println(log);
+
+        assertTrue("Build succeeded where it should have failed", build.getResult().isWorseOrEqualTo(Result.FAILURE));
+        assertTrue("Build did not display staging logs", log.contains("Downloading and installing node"));
+        assertTrue("Build did not display proper error message",
+                log.contains("ERROR: The application failed to start after"));
+    }
+
+    @Test
     public void testPerformUnknownHost() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
         project.setScm(new ExtractResourceSCM(getClass().getResource("hello-java.zip")));
@@ -177,10 +199,11 @@ public class StackatoPushPublisherTest {
         project.getPublishersList().add(stackato);
         FreeStyleBuild build = project.scheduleBuild2(0).get();
         System.out.println(build.getDisplayName() + " completed");
-        assertTrue("Build succeeded where it should have failed", build.getResult().isWorseOrEqualTo(Result.FAILURE));
 
         String s = FileUtils.readFileToString(build.getLogFile());
         System.out.println(s);
+
+        assertTrue("Build succeeded where it should have failed", build.getResult().isWorseOrEqualTo(Result.FAILURE));
         assertTrue("Build did not write error message", s.contains("ERROR: Unknown host"));
     }
 
@@ -193,10 +216,11 @@ public class StackatoPushPublisherTest {
         project.getPublishersList().add(stackato);
         FreeStyleBuild build = project.scheduleBuild2(0).get();
         System.out.println(build.getDisplayName() + " completed");
-        assertTrue("Build succeeded where it should have failed", build.getResult().isWorseOrEqualTo(Result.FAILURE));
 
         String s = FileUtils.readFileToString(build.getLogFile());
         System.out.println(s);
+
+        assertTrue("Build succeeded where it should have failed", build.getResult().isWorseOrEqualTo(Result.FAILURE));
         assertTrue("Build did not write error message", s.contains("ERROR: Wrong username or password"));
     }
 }
