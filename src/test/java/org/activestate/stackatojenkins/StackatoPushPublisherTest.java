@@ -191,6 +191,33 @@ public class StackatoPushPublisherTest {
     }
 
     @Test
+    public void testPerformNoRoute() throws Exception {
+        FreeStyleProject project = j.createFreeStyleProject();
+        project.setScm(new ExtractResourceSCM(getClass().getResource("hello-java.zip")));
+        StackatoPushPublisher.OptionalManifest manifest =
+                new StackatoPushPublisher.OptionalManifest("hello-java", 512, "", 0, 0, true,
+                        "target/hello-java-1.0.war", "", "", "");
+        StackatoPushPublisher stackato =
+                new StackatoPushPublisher(TEST_TARGET, TEST_ORG, TEST_SPACE, TEST_USERNAME, TEST_PASSWORD, manifest);
+        project.getPublishersList().add(stackato);
+        FreeStyleBuild build = project.scheduleBuild2(0).get();
+        System.out.println(build.getDisplayName() + " completed");
+
+        String log = FileUtils.readFileToString(build.getLogFile());
+        System.out.println(log);
+
+        assertTrue("Build did not succeed", build.getResult().isBetterOrEqualTo(Result.SUCCESS));
+        assertTrue("Build did not display staging logs", log.contains("Downloaded app package"));
+
+        System.out.println("stackato.getAppURI() = " + stackato.getAppURI());
+        String uri = stackato.getAppURI();
+        Request request = Request.Get(uri);
+        HttpResponse response = request.execute().returnResponse();
+        int statusCode = response.getStatusLine().getStatusCode();
+        assertEquals("Get request did not respond 404 Not Found", 404, statusCode);
+    }
+
+    @Test
     public void testPerformUnknownHost() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
         project.setScm(new ExtractResourceSCM(getClass().getResource("hello-java.zip")));

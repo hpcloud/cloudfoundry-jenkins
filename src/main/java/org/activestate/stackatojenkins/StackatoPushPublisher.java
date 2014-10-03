@@ -135,6 +135,11 @@ public class StackatoPushPublisher extends Recorder {
                 client.createApplication(appName, staging, deploymentInfo.getMemory(), uris, services);
             }
 
+            // Delete route if no-route parameter
+            if (deploymentInfo.isNoRoute()) {
+                client.deleteRoute(deploymentInfo.getHostname(), deploymentInfo.getDomain());
+            }
+
             // Change number of instances
             int instances = deploymentInfo.getInstances();
             if (instances > 1) {
@@ -207,7 +212,11 @@ public class StackatoPushPublisher extends Recorder {
                 if (running != totalInstances) {
                     listener.getLogger().println("WARNING: Some instances of the application are not running.");
                 }
-                listener.getLogger().println("Application is now running at " + getAppURI());
+                if (deploymentInfo.isNoRoute()) {
+                    listener.getLogger().println("Application is now running. (No route)");
+                } else {
+                    listener.getLogger().println("Application is now running at " + getAppURI());
+                }
                 listener.getLogger().println("Stackato push successful.");
                 return true;
             } else {
