@@ -36,6 +36,9 @@
     <f:entry title="Timeout" field="timeout">
       <f:textbox default="${instance.optionalManifest.timeout}"/>
     </f:entry>
+    <f:entry title="Environment Variables" field="envVars">
+      <f:expandableTextbox default="${instance.optionalManifest.envVars}"/>
+    </f:entry>
 
     <f:advanced>
       <f:entry title="Do not create a route" field="noRoute">

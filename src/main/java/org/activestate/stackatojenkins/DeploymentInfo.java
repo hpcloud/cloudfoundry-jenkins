@@ -7,6 +7,7 @@ import org.activestate.stackatojenkins.StackatoPushPublisher.OptionalManifest;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -165,6 +166,22 @@ public class DeploymentInfo {
                 appPath = ".";
             }
 
+            String manifestEnvVars = optionalManifest.envVars;
+            if (!manifestEnvVars.isEmpty()) {
+                String[] individualVars = manifestEnvVars.split("\n");
+                if (individualVars.length >= 2) {
+                    for (String var : individualVars) {
+                        String[] split = var.split(":");
+                        if (split.length >= 2) {
+                            this.envVars.put(split[0].trim(), split[1].trim());
+                        } else {
+                            listener.getLogger().println("WARNING: Malformed env vars settings. Ignoring.");
+                        }
+                    }
+                } else {
+                    listener.getLogger().println("WARNING: Malformed env vars settings. Ignoring.");
+                }
+            }
         }
 
         // TODO: env vars and services

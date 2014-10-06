@@ -76,6 +76,7 @@ public class StackatoPushPublisher extends Recorder {
             listener.getLogger().println("optionalManifest.buildpack: " + optionalManifest.buildpack);
             listener.getLogger().println("optionalManifest.command: " + optionalManifest.command);
             listener.getLogger().println("optionalManifest.domain: " + optionalManifest.domain);
+            listener.getLogger().println("optionalManifest.envVars: " + optionalManifest.envVars);
         } else {
             listener.getLogger().println("optionalManifest is null");
         }
@@ -281,10 +282,12 @@ public class StackatoPushPublisher extends Recorder {
         public final String buildpack;
         public final String command;
         public final String domain;
+        public final String envVars;
 
         @DataBoundConstructor
         public OptionalManifest(String appName, int memory, String hostname, int instances, int timeout,
-                                boolean noRoute, String appPath, String buildpack, String command, String domain) {
+                                boolean noRoute, String appPath, String buildpack, String command, String domain,
+                                String envVars) {
             this.appName = appName;
             this.memory = memory;
             this.hostname = hostname;
@@ -295,6 +298,7 @@ public class StackatoPushPublisher extends Recorder {
             this.buildpack = buildpack;
             this.command = command;
             this.domain = domain;
+            this.envVars = envVars;
         }
     }
 

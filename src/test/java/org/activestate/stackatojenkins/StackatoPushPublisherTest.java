@@ -83,7 +83,7 @@ public class StackatoPushPublisherTest {
         project.setScm(new ExtractResourceSCM(getClass().getResource("hello-java.zip")));
         StackatoPushPublisher.OptionalManifest manifest =
                 new StackatoPushPublisher.OptionalManifest("hello-java", 512, "", 0, 0, false,
-                        "target/hello-java-1.0.war", "", "", "");
+                        "target/hello-java-1.0.war", "", "", "", "");
         StackatoPushPublisher stackato =
                 new StackatoPushPublisher(TEST_TARGET, TEST_ORG, TEST_SPACE, TEST_USERNAME, TEST_PASSWORD, manifest);
         project.getPublishersList().add(stackato);
@@ -113,7 +113,7 @@ public class StackatoPushPublisherTest {
         project.setScm(new ExtractResourceSCM(getClass().getResource("hello-java.zip")));
         StackatoPushPublisher.OptionalManifest manifest =
                 new StackatoPushPublisher.OptionalManifest("hello-java", 64, "", 4, 0, false,
-                        "target/hello-java-1.0.war", "", "", "");
+                        "target/hello-java-1.0.war", "", "", "", "");
         StackatoPushPublisher stackato =
                 new StackatoPushPublisher(TEST_TARGET, TEST_ORG, TEST_SPACE, TEST_USERNAME, TEST_PASSWORD, manifest);
         project.getPublishersList().add(stackato);
@@ -143,7 +143,7 @@ public class StackatoPushPublisherTest {
         project.setScm(new ExtractResourceSCM(getClass().getResource("heroku-node-js-sample.zip")));
         StackatoPushPublisher.OptionalManifest manifest =
                 new StackatoPushPublisher.OptionalManifest("heroku-node-js-sample", 512, "", 1, 60, false, "",
-                        "https://github.com/heroku/heroku-buildpack-nodejs", "", "");
+                        "https://github.com/heroku/heroku-buildpack-nodejs", "", "", "");
         StackatoPushPublisher stackato =
                 new StackatoPushPublisher(TEST_TARGET, TEST_ORG, TEST_SPACE, TEST_USERNAME, TEST_PASSWORD, manifest);
         project.getPublishersList().add(stackato);
@@ -174,7 +174,7 @@ public class StackatoPushPublisherTest {
         project.setScm(new ExtractResourceSCM(getClass().getResource("hello-java.zip")));
         StackatoPushPublisher.OptionalManifest manifest =
                 new StackatoPushPublisher.OptionalManifest("hello-java", 512, "", 0, 4, false,
-                        "target/hello-java-1.0.war", "", "", "");
+                        "target/hello-java-1.0.war", "", "", "", "");
         StackatoPushPublisher stackato =
                 new StackatoPushPublisher(TEST_TARGET, TEST_ORG, TEST_SPACE, TEST_USERNAME, TEST_PASSWORD, manifest);
         project.getPublishersList().add(stackato);
@@ -225,7 +225,7 @@ public class StackatoPushPublisherTest {
         project.setScm(new ExtractResourceSCM(getClass().getResource("hello-java.zip")));
         StackatoPushPublisher.OptionalManifest manifest =
                 new StackatoPushPublisher.OptionalManifest("hello-java", 512, "", 0, 0, true,
-                        "target/hello-java-1.0.war", "", "", "");
+                        "target/hello-java-1.0.war", "", "", "", "");
         StackatoPushPublisher stackato =
                 new StackatoPushPublisher(TEST_TARGET, TEST_ORG, TEST_SPACE, TEST_USERNAME, TEST_PASSWORD, manifest);
         project.getPublishersList().add(stackato);
