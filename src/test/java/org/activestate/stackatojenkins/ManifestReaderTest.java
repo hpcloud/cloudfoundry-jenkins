@@ -25,11 +25,26 @@ public class ManifestReaderTest {
     }
 
     @Test
+    public void testGetApplicationInfoEnvVars() throws Exception {
+        File manifest = new File(getClass().getResource("env-vars-manifest.yml").toURI());
+        ManifestReader reader = new ManifestReader(manifest);
+        Map<String, Object> result = reader.getApplicationInfo();
+        assertEquals(result.get("name"), "hello-java");
+        assertEquals(result.get("memory"), "512M");
+        assertEquals(result.get("path"), "target/hello-java-1.0.war");
+        @SuppressWarnings("unchecked")
+        Map<String, String> envVars = (Map<String, String>) result.get("env");
+        assertEquals(envVars.get("ENV_VAR_ONE"), "value1");
+        assertEquals(envVars.get("ENV_VAR_TWO"), "value2");
+        assertEquals(envVars.get("ENV_VAR_THREE"), "value3");
+    }
+
+    @Test
     public void testGetApplicationInfoMalformedYML() throws Exception {
         exception.expect(ManifestParsingException.class);
         exception.expectMessage("Malformed YAML file");
         File manifest = new File(getClass().getResource("malformed-manifest.yml").toURI());
-        ManifestReader reader = new ManifestReader(manifest);
+        new ManifestReader(manifest);
     }
 
     @Test
@@ -37,7 +52,7 @@ public class ManifestReaderTest {
         exception.expect(ManifestParsingException.class);
         exception.expectMessage("Could not parse the manifest file into a map");
         File manifest = new File(getClass().getResource("not-a-map-manifest.yml").toURI());
-        ManifestReader reader = new ManifestReader(manifest);
+        new ManifestReader(manifest);
     }
 
     @Test
@@ -45,7 +60,7 @@ public class ManifestReaderTest {
         exception.expect(ManifestParsingException.class);
         exception.expectMessage("Manifest file does not start with an 'applications' block");
         File manifest = new File(getClass().getResource("no-application-block-manifest.yml").toURI());
-        ManifestReader reader = new ManifestReader(manifest);
+        new ManifestReader(manifest);
     }
 
     @Test

@@ -191,6 +191,35 @@ public class StackatoPushPublisherTest {
     }
 
     @Test
+    public void testPerformEnvVars() throws Exception {
+        FreeStyleProject project = j.createFreeStyleProject();
+        project.setScm(new ExtractResourceSCM(getClass().getResource("python-env.zip")));
+        StackatoPushPublisher stackato =
+                new StackatoPushPublisher(TEST_TARGET, TEST_ORG, TEST_SPACE, TEST_USERNAME, TEST_PASSWORD, null);
+        project.getPublishersList().add(stackato);
+        FreeStyleBuild build = project.scheduleBuild2(0).get();
+        System.out.println(build.getDisplayName() + " completed");
+
+        String log = FileUtils.readFileToString(build.getLogFile());
+        System.out.println(log);
+
+        assertTrue("Build did not succeed", build.getResult().isBetterOrEqualTo(Result.SUCCESS));
+        assertTrue("Build did not display staging logs", log.contains("Downloaded app package"));
+
+        System.out.println("stackato.getAppURI() = " + stackato.getAppURI());
+        String uri = stackato.getAppURI();
+        Request request = Request.Get(uri);
+        HttpResponse response = request.execute().returnResponse();
+        int statusCode = response.getStatusLine().getStatusCode();
+        assertEquals("Get request did not respond 200 OK", 200, statusCode);
+        String content = EntityUtils.toString(response.getEntity());
+        System.out.println(content);
+        assertTrue("App did not have correct ENV_VAR_ONE", content.contains("ENV_VAR_ONE: value1"));
+        assertTrue("App did not have correct ENV_VAR_TWO", content.contains("ENV_VAR_TWO: value2"));
+        assertTrue("App did not have correct ENV_VAR_THREE", content.contains("ENV_VAR_THREE: value3"));
+    }
+
+    @Test
     public void testPerformNoRoute() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
         project.setScm(new ExtractResourceSCM(getClass().getResource("hello-java.zip")));

@@ -65,7 +65,8 @@ public class ManifestReader {
     /**
      * Returns the list of maps describing the applications.
      */
-    private List<Map<String, Object>> parseManifest() throws IOException, ManifestParsingException, InterruptedException {
+    private List<Map<String, Object>> parseManifest()
+            throws IOException, ManifestParsingException, InterruptedException {
         InputStream inputStream = new FileInputStream(manifestFile);
         Yaml yaml = new Yaml();
         Object parsedYaml;
@@ -75,10 +76,14 @@ public class ManifestReader {
             throw new ManifestParsingException("Malformed YAML file: " + manifestFile.getPath());
         }
         Map<String, List<Map<String, Object>>> parsedYamlMap;
-        if (parsedYaml instanceof Map<?, ?>) {
-            parsedYamlMap = (Map<String, List<Map<String, Object>>>) parsedYaml;
-        } else {
-            throw new ManifestParsingException("Could not parse the manifest file into a map: " + manifestFile.getPath());
+        try {
+            @SuppressWarnings("unchecked")
+            Map<String, List<Map<String, Object>>> parsedYamlMapSuppressed =
+                    (Map<String, List<Map<String, Object>>>) parsedYaml;
+            parsedYamlMap = parsedYamlMapSuppressed;
+        } catch (ClassCastException e) {
+            throw new ManifestParsingException(
+                    "Could not parse the manifest file into a map: " + manifestFile.getPath());
         }
 
         List<Map<String, Object>> applicationList = parsedYamlMap.get("applications");

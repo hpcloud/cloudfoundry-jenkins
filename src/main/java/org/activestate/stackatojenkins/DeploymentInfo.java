@@ -7,6 +7,7 @@ import org.activestate.stackatojenkins.StackatoPushPublisher.OptionalManifest;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 
 public class DeploymentInfo {
@@ -27,6 +28,8 @@ public class DeploymentInfo {
     private String buildpack;
     private String command;
     private String domain;
+
+    private Map<String, String> envVars = new HashMap<String, String>();
 
     public DeploymentInfo(AbstractBuild build, BuildListener listener, OptionalManifest optionalManifest,
                           String jenkinsBuildName, String defaultDomain)
@@ -56,7 +59,7 @@ public class DeploymentInfo {
                         println("WARNING: No manifest value for memory. Using default value: " + DEFAULT_MEMORY);
                 memory = DEFAULT_MEMORY;
             } else if (memString.toLowerCase().endsWith("m")) {
-                memory = Integer.parseInt(memString.substring(0, memString.length()-1));
+                memory = Integer.parseInt(memString.substring(0, memString.length() - 1));
             }
             this.memory = memory;
 
@@ -101,6 +104,14 @@ public class DeploymentInfo {
             // Optional attributes with no defaults, it's ok if those are null.
             this.buildpack = (String) applicationInfo.get("buildpack");
             this.command = (String) applicationInfo.get("command");
+
+            try {
+                @SuppressWarnings("unchecked")
+                Map<String, String> envVarsSuppressed = (Map<String, String>) applicationInfo.get("env");
+                this.envVars = envVarsSuppressed;
+            } catch (ClassCastException e) {
+                listener.getLogger().println("WARNING: Could not parse env vars into a map. Ignoring env vars.");
+            }
         }
         // Read Jenkins configuration
         else {
@@ -197,5 +208,9 @@ public class DeploymentInfo {
 
     public String getDomain() {
         return domain;
+    }
+
+    public Map<String, String> getEnvVars() {
+        return envVars;
     }
 }

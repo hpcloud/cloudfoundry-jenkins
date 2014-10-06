@@ -140,10 +140,14 @@ public class StackatoPushPublisher extends Recorder {
                 client.deleteRoute(deploymentInfo.getHostname(), deploymentInfo.getDomain());
             }
 
+            // Add environment variables
+            if (!deploymentInfo.getEnvVars().isEmpty()) {
+                client.updateApplicationEnv(appName, deploymentInfo.getEnvVars());
+            }
+
             // Change number of instances
-            int instances = deploymentInfo.getInstances();
-            if (instances > 1) {
-                client.updateApplicationInstances(appName, instances);
+            if (deploymentInfo.getInstances() > 1) {
+                client.updateApplicationInstances(appName, deploymentInfo.getInstances());
             }
 
             // Push files
