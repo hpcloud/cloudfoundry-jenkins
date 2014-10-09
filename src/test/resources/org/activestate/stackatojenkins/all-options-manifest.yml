@@ -1,0 +1,20 @@
+---
+applications:
+- name: hello-java
+  memory: 512M
+  host: testhost
+  instances: 4
+  timeout: 42
+  no-route: true
+  domain: testdomain.local
+  path: target/hello-java-1.0.war
+  buildpack: https://github.com/heroku/heroku-buildpack-hello
+  command: echo Hello
+  env:
+    ENV_VAR_ONE: value1
+    ENV_VAR_TWO: value2
+    ENV_VAR_THREE: value3
+  services:
+  - service_name_one
+  - service_name_two
+  - service_name_three

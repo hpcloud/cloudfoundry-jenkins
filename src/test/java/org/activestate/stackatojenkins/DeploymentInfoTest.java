@@ -5,11 +5,12 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 public class DeploymentInfoTest {
 
@@ -17,75 +18,70 @@ public class DeploymentInfoTest {
     public ExpectedException exception = ExpectedException.none();
 
     @Test
-    public void testGetApplicationInfo() throws Exception {
-        File manifest = new File(getClass().getResource("hello-java-manifest.yml").toURI());
-        ManifestReader reader = new ManifestReader(manifest);
-        Map<String, Object> result = reader.getApplicationInfo();
-        assertEquals(result.get("name"), "hello-java");
-        assertEquals(result.get("memory"), "512M");
-        assertEquals(result.get("path"), "target/hello-java-1.0.war");
+    public void testReadManifestFileAllOptions() throws Exception {
+        File manifestFile = new File(getClass().getResource("all-options-manifest.yml").toURI());
+        DeploymentInfo deploymentInfo =
+                new DeploymentInfo(System.out, manifestFile, null, "jenkins-build-name", "domain-name");
+
+        assertEquals(deploymentInfo.getAppName(), "hello-java");
+        assertEquals(deploymentInfo.getMemory(), 512);
+        assertEquals(deploymentInfo.getHostname(), "testhost");
+        assertEquals(deploymentInfo.getInstances(), 4);
+        assertEquals(deploymentInfo.getTimeout(), 42);
+        assertEquals(deploymentInfo.isNoRoute(), true);
+        assertEquals(deploymentInfo.getDomain(), "testdomain.local");
+        assertEquals(deploymentInfo.getAppPath(), "target/hello-java-1.0.war");
+        assertEquals(deploymentInfo.getBuildpack(), "https://github.com/heroku/heroku-buildpack-hello");
+        assertEquals(deploymentInfo.getCommand(), "echo Hello");
+
+        Map<String, String> expectedEnvs = new HashMap<String, String>();
+        expectedEnvs.put("ENV_VAR_ONE", "value1");
+        expectedEnvs.put("ENV_VAR_TWO", "value2");
+        expectedEnvs.put("ENV_VAR_THREE", "value3");
+        assertEquals(deploymentInfo.getEnvVars(), expectedEnvs);
+
+        List<String> expectedServices = new ArrayList<String>();
+        expectedServices.add("service_name_one");
+        expectedServices.add("service_name_two");
+        expectedServices.add("service_name_three");
+        assertEquals(deploymentInfo.getServicesNames(), expectedServices);
     }
 
     @Test
-    public void testGetApplicationInfoEnvVars() throws Exception {
-        File manifest = new File(getClass().getResource("env-vars-manifest.yml").toURI());
-        ManifestReader reader = new ManifestReader(manifest);
-        Map<String, Object> result = reader.getApplicationInfo();
-        assertEquals(result.get("name"), "hello-java");
-        assertEquals(result.get("memory"), "512M");
-        assertEquals(result.get("path"), "target/hello-java-1.0.war");
-        @SuppressWarnings("unchecked")
-        Map<String, String> envVars = (Map<String, String>) result.get("env");
-        assertEquals(envVars.get("ENV_VAR_ONE"), "value1");
-        assertEquals(envVars.get("ENV_VAR_TWO"), "value2");
-        assertEquals(envVars.get("ENV_VAR_THREE"), "value3");
-    }
+    public void testOptionalJenkinsConfigAllOptions() throws Exception {
+        String envVars = "ENV_VAR_ONE: value1\n" +
+                "ENV_VAR_TWO: value2\n" +
+                "ENV_VAR_THREE: value3";
+        String services = "service_name_one, service_name_two, service_name_three";
+        StackatoPushPublisher.OptionalManifest jenkinsManifest =
+                new StackatoPushPublisher.OptionalManifest("hello-java", 512, "testhost", 4, 42, true,
+                        "target/hello-java-1.0.war",
+                        "https://github.com/heroku/heroku-buildpack-hello",
+                        "echo Hello", "testdomain.local", envVars, services);
+        DeploymentInfo deploymentInfo =
+                new DeploymentInfo(System.out, null, jenkinsManifest, "jenkins-build-name", "domain-name");
 
-    @Test
-    public void testGetApplicationInfoServicesNames() throws Exception {
-        File manifest = new File(getClass().getResource("services-names-manifest.yml").toURI());
-        ManifestReader reader = new ManifestReader(manifest);
-        Map<String, Object> result = reader.getApplicationInfo();
-        assertEquals(result.get("name"), "hello-java");
-        assertEquals(result.get("memory"), "512M");
-        assertEquals(result.get("path"), "target/hello-java-1.0.war");
-        @SuppressWarnings("unchecked")
-        List<String> servicesNames = (List<String>) result.get("services");
-        assertTrue(servicesNames.contains("service1"));
-        assertTrue(servicesNames.contains("service2"));
-        assertTrue(servicesNames.contains("service3"));
-    }
+        assertEquals(deploymentInfo.getAppName(), "hello-java");
+        assertEquals(deploymentInfo.getMemory(), 512);
+        assertEquals(deploymentInfo.getHostname(), "testhost");
+        assertEquals(deploymentInfo.getInstances(), 4);
+        assertEquals(deploymentInfo.getTimeout(), 42);
+        assertEquals(deploymentInfo.isNoRoute(), true);
+        assertEquals(deploymentInfo.getDomain(), "testdomain.local");
+        assertEquals(deploymentInfo.getAppPath(), "target/hello-java-1.0.war");
+        assertEquals(deploymentInfo.getBuildpack(), "https://github.com/heroku/heroku-buildpack-hello");
+        assertEquals(deploymentInfo.getCommand(), "echo Hello");
 
-    @Test
-    public void testGetApplicationInfoMalformedYML() throws Exception {
-        exception.expect(ManifestParsingException.class);
-        exception.expectMessage("Malformed YAML file");
-        File manifest = new File(getClass().getResource("malformed-manifest.yml").toURI());
-        new ManifestReader(manifest);
-    }
+        Map<String, String> expectedEnvs = new HashMap<String, String>();
+        expectedEnvs.put("ENV_VAR_ONE", "value1");
+        expectedEnvs.put("ENV_VAR_TWO", "value2");
+        expectedEnvs.put("ENV_VAR_THREE", "value3");
+        assertEquals(deploymentInfo.getEnvVars(), expectedEnvs);
 
-    @Test
-    public void testGetApplicationInfoNotAMap() throws Exception {
-        exception.expect(ManifestParsingException.class);
-        exception.expectMessage("Could not parse the manifest file into a map");
-        File manifest = new File(getClass().getResource("not-a-map-manifest.yml").toURI());
-        new ManifestReader(manifest);
-    }
-
-    @Test
-    public void testGetApplicationInfoNoApplicationBlock() throws Exception {
-        exception.expect(ManifestParsingException.class);
-        exception.expectMessage("Manifest file does not start with an 'applications' block");
-        File manifest = new File(getClass().getResource("no-application-block-manifest.yml").toURI());
-        new ManifestReader(manifest);
-    }
-
-    @Test
-    public void testGetApplicationInfoWrongAppName() throws Exception {
-        exception.expect(ManifestParsingException.class);
-        exception.expectMessage("Manifest file does not contain an app named goodbye-java");
-        File manifest = new File(getClass().getResource("hello-java-manifest.yml").toURI());
-        ManifestReader reader = new ManifestReader(manifest);
-        reader.getApplicationInfo("goodbye-java");
+        List<String> expectedServices = new ArrayList<String>();
+        expectedServices.add("service_name_one");
+        expectedServices.add("service_name_two");
+        expectedServices.add("service_name_three");
+        assertEquals(deploymentInfo.getServicesNames(), expectedServices);
     }
 }
