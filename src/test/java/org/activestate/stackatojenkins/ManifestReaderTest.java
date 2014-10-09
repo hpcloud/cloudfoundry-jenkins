@@ -21,9 +21,9 @@ public class ManifestReaderTest {
         File manifest = new File(getClass().getResource("hello-java-manifest.yml").toURI());
         ManifestReader reader = new ManifestReader(manifest);
         Map<String, Object> result = reader.getApplicationInfo();
-        assertEquals(result.get("name"), "hello-java");
-        assertEquals(result.get("memory"), "512M");
-        assertEquals(result.get("path"), "target/hello-java-1.0.war");
+        assertEquals("hello-java", result.get("name"));
+        assertEquals("512M", result.get("memory"));
+        assertEquals("target/hello-java-1.0.war", result.get("path"));
     }
 
     @Test
@@ -31,14 +31,14 @@ public class ManifestReaderTest {
         File manifest = new File(getClass().getResource("env-vars-manifest.yml").toURI());
         ManifestReader reader = new ManifestReader(manifest);
         Map<String, Object> result = reader.getApplicationInfo();
-        assertEquals(result.get("name"), "hello-java");
-        assertEquals(result.get("memory"), "512M");
-        assertEquals(result.get("path"), "target/hello-java-1.0.war");
+        assertEquals("hello-java", result.get("name"));
+        assertEquals("512M", result.get("memory"));
+        assertEquals("target/hello-java-1.0.war", result.get("path"));
         @SuppressWarnings("unchecked")
         Map<String, String> envVars = (Map<String, String>) result.get("env");
-        assertEquals(envVars.get("ENV_VAR_ONE"), "value1");
-        assertEquals(envVars.get("ENV_VAR_TWO"), "value2");
-        assertEquals(envVars.get("ENV_VAR_THREE"), "value3");
+        assertEquals("value1", envVars.get("ENV_VAR_ONE"));
+        assertEquals("value2", envVars.get("ENV_VAR_TWO"));
+        assertEquals("value3", envVars.get("ENV_VAR_THREE"));
     }
 
     @Test
@@ -46,9 +46,9 @@ public class ManifestReaderTest {
         File manifest = new File(getClass().getResource("services-names-manifest.yml").toURI());
         ManifestReader reader = new ManifestReader(manifest);
         Map<String, Object> result = reader.getApplicationInfo();
-        assertEquals(result.get("name"), "hello-java");
-        assertEquals(result.get("memory"), "512M");
-        assertEquals(result.get("path"), "target/hello-java-1.0.war");
+        assertEquals("hello-java", result.get("name"));
+        assertEquals("512M", result.get("memory"));
+        assertEquals("target/hello-java-1.0.war", result.get("path"));
         @SuppressWarnings("unchecked")
         List<String> servicesNames = (List<String>) result.get("services");
         assertTrue(servicesNames.contains("service1"));
