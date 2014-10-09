@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class StackatoPushPublisher extends Recorder {
@@ -125,6 +124,9 @@ public class StackatoPushPublisher extends Recorder {
                 }
             }
 
+            // TODO: Create services
+            // List<CloudService> cloudServices = deploymentInfo.getServices();
+
             // Create app if it doesn't exist
             if (!alreadyExists) {
                 listener.getLogger().println("Creating new app.");
@@ -132,7 +134,7 @@ public class StackatoPushPublisher extends Recorder {
                         null, deploymentInfo.getTimeout());
                 List<String> uris = new ArrayList<String>();
                 uris.add(getAppURI());
-                List<String> services = new ArrayList<String>();
+                List<String> services = deploymentInfo.getServicesNames();
                 client.createApplication(appName, staging, deploymentInfo.getMemory(), uris, services);
             }
 
@@ -142,7 +144,7 @@ public class StackatoPushPublisher extends Recorder {
             }
 
             // Add environment variables
-            if (!deploymentInfo.getEnvVars().isEmpty()) {
+            if (deploymentInfo.getEnvVars() != null && !deploymentInfo.getEnvVars().isEmpty()) {
                 client.updateApplicationEnv(appName, deploymentInfo.getEnvVars());
             }
 
@@ -282,12 +284,15 @@ public class StackatoPushPublisher extends Recorder {
         public final String buildpack;
         public final String command;
         public final String domain;
+
         public final String envVars;
+        public final String servicesNames;
+
 
         @DataBoundConstructor
         public OptionalManifest(String appName, int memory, String hostname, int instances, int timeout,
                                 boolean noRoute, String appPath, String buildpack, String command, String domain,
-                                String envVars) {
+                                String envVars, String servicesNames) {
             this.appName = appName;
             this.memory = memory;
             this.hostname = hostname;
@@ -299,6 +304,7 @@ public class StackatoPushPublisher extends Recorder {
             this.command = command;
             this.domain = domain;
             this.envVars = envVars;
+            this.servicesNames = servicesNames;
         }
     }
 

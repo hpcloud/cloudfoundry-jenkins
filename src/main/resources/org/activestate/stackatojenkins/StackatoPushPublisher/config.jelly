@@ -16,6 +16,7 @@
     <f:password/>
   </f:entry>
 
+
   <f:optionalBlock field="optionalManifest" name="optionalManifest" title="Read app info from manifest.yml file"
                    negative="true" checked="${instance.optionalManifest == null}">
     <f:entry title="Application Name" field="appName">
@@ -38,6 +39,9 @@
     </f:entry>
     <f:entry title="Environment Variables" field="envVars">
       <f:expandableTextbox default="${instance.optionalManifest.envVars}"/>
+    </f:entry>
+    <f:entry title="Services" field="servicesNames">
+      <f:expandableTextbox default="${instance.optionalManifest.servicesNames}"/>
     </f:entry>
 
     <f:advanced>

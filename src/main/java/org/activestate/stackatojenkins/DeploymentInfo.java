@@ -7,8 +7,9 @@ import org.activestate.stackatojenkins.StackatoPushPublisher.OptionalManifest;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class DeploymentInfo {
@@ -31,6 +32,7 @@ public class DeploymentInfo {
     private String domain;
 
     private Map<String, String> envVars = new HashMap<String, String>();
+    private List<String> servicesNames = new ArrayList<String>();
 
     public DeploymentInfo(AbstractBuild build, BuildListener listener, OptionalManifest optionalManifest,
                           String jenkinsBuildName, String defaultDomain)
@@ -113,6 +115,14 @@ public class DeploymentInfo {
             } catch (ClassCastException e) {
                 listener.getLogger().println("WARNING: Could not parse env vars into a map. Ignoring env vars.");
             }
+
+            try {
+                @SuppressWarnings("unchecked")
+                List<String> servicesSuppressed = (List<String>) applicationInfo.get("services");
+                this.servicesNames = servicesSuppressed;
+            } catch (ClassCastException e) {
+                listener.getLogger().println("WARNING: Could not parse services into a list. Ignoring services.");
+            }
         }
         // Read Jenkins configuration
         else {
@@ -169,22 +179,24 @@ public class DeploymentInfo {
             String manifestEnvVars = optionalManifest.envVars;
             if (!manifestEnvVars.isEmpty()) {
                 String[] individualVars = manifestEnvVars.split("\n");
-                if (individualVars.length >= 2) {
-                    for (String var : individualVars) {
-                        String[] split = var.split(":");
-                        if (split.length >= 2) {
-                            this.envVars.put(split[0].trim(), split[1].trim());
-                        } else {
-                            listener.getLogger().println("WARNING: Malformed env vars settings. Ignoring.");
-                        }
+                for (String var : individualVars) {
+                    String[] split = var.split(":");
+                    if (split.length >= 2) {
+                        this.envVars.put(split[0].trim(), split[1].trim());
+                    } else {
+                        listener.getLogger().println("WARNING: Malformed env vars settings. Ignoring.");
                     }
-                } else {
-                    listener.getLogger().println("WARNING: Malformed env vars settings. Ignoring.");
+                }
+            }
+
+            String servicesNames = optionalManifest.servicesNames;
+            if (!servicesNames.isEmpty()) {
+                String[] individualServices = servicesNames.split(",");
+                for (String service : individualServices) {
+                    this.servicesNames.add(service.trim());
                 }
             }
         }
-
-        // TODO: env vars and services
     }
 
     public String getAppName() {
@@ -230,4 +242,9 @@ public class DeploymentInfo {
     public Map<String, String> getEnvVars() {
         return envVars;
     }
+
+    public List<String> getServicesNames() {
+        return servicesNames;
+    }
+
 }
