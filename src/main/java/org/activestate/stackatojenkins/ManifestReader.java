@@ -1,11 +1,13 @@
 package org.activestate.stackatojenkins;
 
-import hudson.FilePath;
-import hudson.model.AbstractBuild;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.scanner.ScannerException;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -28,7 +30,11 @@ public class ManifestReader {
      * @return the deployment info
      */
     public Map<String, Object> getApplicationInfo(String appName) throws ManifestParsingException {
-        return getApplicationMap(appName);
+        Map<String, Object> result = getApplicationMap(appName);
+        if (result == null) {
+            result = new HashMap<String, Object>();
+        }
+        return result;
         // TODO: get global map and combine both global and app map
     }
 

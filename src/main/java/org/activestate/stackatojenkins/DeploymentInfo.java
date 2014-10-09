@@ -1,23 +1,18 @@
 package org.activestate.stackatojenkins;
 
-import hudson.FilePath;
-import hudson.model.AbstractBuild;
-import hudson.model.BuildListener;
 import org.activestate.stackatojenkins.StackatoPushPublisher.OptionalManifest;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class DeploymentInfo {
 
-    private static final Integer DEFAULT_MEMORY = 512;
-    private static final Integer DEFAULT_INSTANCES = 1;
-    private static final Integer DEFAULT_TIMEOUT = 60;
+    public static final int DEFAULT_MEMORY = 512;
+    public static final int DEFAULT_INSTANCES = 1;
+    public static final int DEFAULT_TIMEOUT = 60;
 
     private String appName;
     private int memory;
@@ -30,8 +25,8 @@ public class DeploymentInfo {
     private String command;
     private String domain;
 
-    private Map<String, String> envVars = new HashMap<String, String>();
-    private List<String> servicesNames = new ArrayList<String>();
+    private Map<String, String> envVars;
+    private List<String> servicesNames;
 
     public DeploymentInfo(PrintStream logger, File manifestFile, OptionalManifest optionalManifest,
                           String jenkinsBuildName, String defaultDomain)
