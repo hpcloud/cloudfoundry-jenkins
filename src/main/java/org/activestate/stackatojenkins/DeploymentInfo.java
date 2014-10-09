@@ -7,14 +7,13 @@ import org.activestate.stackatojenkins.StackatoPushPublisher.OptionalManifest;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class DeploymentInfo {
-
-    private static final String DEFAULT_MANIFEST_PATH = "manifest.yml";
 
     private static final Integer DEFAULT_MEMORY = 512;
     private static final Integer DEFAULT_INSTANCES = 1;
@@ -34,41 +33,37 @@ public class DeploymentInfo {
     private Map<String, String> envVars = new HashMap<String, String>();
     private List<String> servicesNames = new ArrayList<String>();
 
-    public DeploymentInfo(AbstractBuild build, BuildListener listener, OptionalManifest optionalManifest,
+    public DeploymentInfo(PrintStream logger, File manifestFile, OptionalManifest optionalManifest,
                           String jenkinsBuildName, String defaultDomain)
             throws IOException, ManifestParsingException, InterruptedException {
 
         if (optionalManifest == null) {
             // Read manifest.yml
-            FilePath appFilePath = new FilePath(build.getWorkspace(), DEFAULT_MANIFEST_PATH);
-            File appFile = new File(appFilePath.toURI());
-            ManifestReader manifestReader = new ManifestReader(appFile);
+            ManifestReader manifestReader = new ManifestReader(manifestFile);
             Map<String, Object> applicationInfo = manifestReader.getApplicationInfo(null);
-            listener.getLogger().println(applicationInfo.toString());
-            readManifestFile(listener, applicationInfo, jenkinsBuildName, defaultDomain);
+            logger.println(applicationInfo.toString());
+            readManifestFile(logger, applicationInfo, jenkinsBuildName, defaultDomain);
         } else {
             // Read Jenkins configuration
-            readOptionalJenkinsConfig(listener, optionalManifest, jenkinsBuildName, defaultDomain);
+            readOptionalJenkinsConfig(logger, optionalManifest, jenkinsBuildName, defaultDomain);
         }
     }
 
-    private void readManifestFile(BuildListener listener, Map<String, Object> manifestJson,
+    private void readManifestFile(PrintStream logger, Map<String, Object> manifestJson,
                                   String jenkinsBuildName, String defaultDomain) {
 
         // Important optional attributes, we should warn in case they are missing
 
         appName = (String) manifestJson.get("name");
         if (appName == null) {
-            listener.getLogger().
-                    println("WARNING: No application name. Using Jenkins build name: " + jenkinsBuildName);
+            logger.println("WARNING: No application name. Using Jenkins build name: " + jenkinsBuildName);
             appName = jenkinsBuildName;
         }
 
         int memory = 0;
         String memString = (String) manifestJson.get("memory");
         if (memString == null) {
-            listener.getLogger().
-                    println("WARNING: No manifest value for memory. Using default value: " + DEFAULT_MEMORY);
+            logger.println("WARNING: No manifest value for memory. Using default value: " + DEFAULT_MEMORY);
             memory = DEFAULT_MEMORY;
         } else if (memString.toLowerCase().endsWith("m")) {
             memory = Integer.parseInt(memString.substring(0, memString.length() - 1));
@@ -77,7 +72,7 @@ public class DeploymentInfo {
 
         hostname = (String) manifestJson.get("host");
         if (hostname == null) {
-            listener.getLogger().println("WARNING: No manifest value for hostname. Using app name: " + appName);
+            logger.println("WARNING: No manifest value for hostname. Using app name: " + appName);
             hostname = appName;
         }
 
@@ -123,7 +118,7 @@ public class DeploymentInfo {
             Map<String, String> envVarsSuppressed = (Map<String, String>) manifestJson.get("env");
             this.envVars = envVarsSuppressed;
         } catch (ClassCastException e) {
-            listener.getLogger().println("WARNING: Could not parse env vars into a map. Ignoring env vars.");
+            logger.println("WARNING: Could not parse env vars into a map. Ignoring env vars.");
         }
 
         try {
@@ -131,28 +126,26 @@ public class DeploymentInfo {
             List<String> servicesSuppressed = (List<String>) manifestJson.get("services");
             this.servicesNames = servicesSuppressed;
         } catch (ClassCastException e) {
-            listener.getLogger().println("WARNING: Could not parse services into a list. Ignoring services.");
+            logger.println("WARNING: Could not parse services into a list. Ignoring services.");
         }
     }
 
-    private void readOptionalJenkinsConfig(BuildListener listener, OptionalManifest optionalManifest,
+    private void readOptionalJenkinsConfig(PrintStream logger, OptionalManifest optionalManifest,
                                            String jenkinsBuildName, String defaultDomain) {
 
         this.appName = optionalManifest.appName;
         if (appName.equals("")) {
-            listener.getLogger().
-                    println("WARNING: No application name. Using Jenkins build name: " + jenkinsBuildName);
+            logger.println("WARNING: No application name. Using Jenkins build name: " + jenkinsBuildName);
             appName = jenkinsBuildName;
         }
         this.memory = optionalManifest.memory;
         if (memory == 0) {
-            listener.getLogger().
-                    println("WARNING: Missing value for memory. Using default value: " + DEFAULT_MEMORY);
+            logger.println("WARNING: Missing value for memory. Using default value: " + DEFAULT_MEMORY);
             memory = DEFAULT_MEMORY;
         }
         this.hostname = optionalManifest.hostname;
         if (hostname.equals("")) {
-            listener.getLogger().println("WARNING: Missing value for hostname. Using app name: " + appName);
+            logger.println("WARNING: Missing value for hostname. Using app name: " + appName);
             hostname = appName;
         }
 
@@ -196,7 +189,7 @@ public class DeploymentInfo {
                 if (split.length >= 2) {
                     this.envVars.put(split[0].trim(), split[1].trim());
                 } else {
-                    listener.getLogger().println("WARNING: Malformed env vars settings. Ignoring.");
+                    logger.println("WARNING: Malformed env vars settings. Ignoring.");
                 }
             }
         }

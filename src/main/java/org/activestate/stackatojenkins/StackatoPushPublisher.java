@@ -29,7 +29,8 @@ import java.util.List;
 
 public class StackatoPushPublisher extends Recorder {
 
-    private final int TIMEOUT = 120;
+    private static final String DEFAULT_MANIFEST_PATH = "manifest.yml";
+    private static final int TIMEOUT = 120;
 
     public final String target;
     public final String organization;
@@ -95,8 +96,11 @@ public class StackatoPushPublisher extends Recorder {
 
             String[] split = fullTarget.split("\\.");
             String domain = split[split.length - 2] + "." + split[split.length - 1];
+
+            FilePath manifestFilePath = new FilePath(build.getWorkspace(), DEFAULT_MANIFEST_PATH);
+            File manifestFile = new File(manifestFilePath.toURI());
             DeploymentInfo deploymentInfo =
-                    new DeploymentInfo(build, listener, optionalManifest, jenkinsBuildName, domain);
+                    new DeploymentInfo(listener.getLogger(), manifestFile, optionalManifest, jenkinsBuildName, domain);
             String appName = deploymentInfo.getAppName();
             setAppURI("https://" + deploymentInfo.getHostname() + "." + deploymentInfo.getDomain());
 
