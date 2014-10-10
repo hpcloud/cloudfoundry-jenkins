@@ -1,0 +1,9 @@
+<div>
+  Environment variables to be set as your application is created.
+  <br/>
+  Write down one environment variable per line, and separate the name and value with a colon. For example:
+  <pre>
+    RAILS_ENV: production
+    RACK_ENV: production
+  </pre>
+</div>

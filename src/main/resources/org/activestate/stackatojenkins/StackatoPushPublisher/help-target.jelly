@@ -1,0 +1,5 @@
+<div>
+  The API endpoint of the platform you want to push to.
+  <br/>
+  "https://api." will be added at the beginning if you don't include it.
+</div>

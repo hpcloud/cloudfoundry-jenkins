@@ -1,0 +1,5 @@
+<div>
+  The hostname of the URI to access your application. If left empty, will default to the application name.
+  <br/>
+  The complete URI follows this pattern: hostname.domain
+</div>

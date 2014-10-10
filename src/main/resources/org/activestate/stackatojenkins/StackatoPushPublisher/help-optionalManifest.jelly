@@ -1,0 +1,12 @@
+<div>
+  <p>
+    If checked, the plugin will use the information contained in a manifest.yml file at the root of the project's
+    folder.
+    <br/>
+    For more information about manifest.yml syntax, check out the
+    <a href="http://docs.cloudfoundry.org/devguide/deploy-apps/manifest.html">Cloud Foundry documentation</a>.
+  </p>
+  <p>
+    If unchecked, you will need to specify some information below.
+  </p>
+</div>

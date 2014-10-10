@@ -1,0 +1,9 @@
+<div>
+  The name of services that must be binded to the application. An application can only bind to services instances that
+  exist in the target App Space before the application is deployed.
+  <br/>
+  Separate the name of the services with a comma. For example:
+  <pre>
+    mysql_service1, mysql_service2
+  </pre>
+</div>

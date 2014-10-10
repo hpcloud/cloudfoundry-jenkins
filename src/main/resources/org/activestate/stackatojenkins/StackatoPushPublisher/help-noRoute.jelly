@@ -1,0 +1,3 @@
+<div>
+  If checked, no URI path will be created to access the application. Use this for applications that run in the background.
+</div>
