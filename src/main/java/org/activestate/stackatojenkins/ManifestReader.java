@@ -14,7 +14,7 @@ import java.util.Map;
 public class ManifestReader {
 
 
-    private File manifestFile;
+    private final File manifestFile;
     private List<Map<String, Object>> applicationList;
 
     public ManifestReader(File manifestFile) throws ManifestParsingException, IOException, InterruptedException {
@@ -72,7 +72,7 @@ public class ManifestReader {
      * Returns the list of maps describing the applications.
      */
     private List<Map<String, Object>> parseManifest()
-            throws IOException, ManifestParsingException, InterruptedException {
+            throws IOException, ManifestParsingException {
         InputStream inputStream = new FileInputStream(manifestFile);
         Yaml yaml = new Yaml();
         Object parsedYaml;

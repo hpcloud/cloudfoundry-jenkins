@@ -6,7 +6,7 @@ import org.cloudfoundry.client.lib.domain.ApplicationLog;
 
 public class JenkinsApplicationLogListener implements ApplicationLogListener {
 
-    private BuildListener listener;
+    private final BuildListener listener;
 
     public JenkinsApplicationLogListener(BuildListener listener) {
         this.listener = listener;
