@@ -184,10 +184,15 @@ public class StackatoPushPublisher extends Recorder {
                         "Switching to alternate method.");
                 int offset = 0;
                 String stagingLogs = client.getStagingLogs(startingInfo, offset);
-                while (stagingLogs != null) {
-                    listener.getLogger().println(stagingLogs);
-                    offset += stagingLogs.length();
-                    stagingLogs = client.getStagingLogs(startingInfo, offset);
+                if (stagingLogs == null) {
+                    listener.getLogger().println("WARNING: Could not get staging logs with alternate method. " +
+                            "Cannot display staging logs.");
+                } else {
+                    while (stagingLogs != null) {
+                        listener.getLogger().println(stagingLogs);
+                        offset += stagingLogs.length();
+                        stagingLogs = client.getStagingLogs(startingInfo, offset);
+                    }
                 }
             }
 
@@ -207,7 +212,7 @@ public class StackatoPushPublisher extends Recorder {
                             running++;
                         }
                     }
-                    if (running == totalInstances) {
+                    if (running == totalInstances && totalInstances > 0) {
                         break;
                     }
                 }
