@@ -39,6 +39,7 @@ public class StackatoPushPublisher extends Recorder {
     public final String password;
     public final OptionalManifest optionalManifest;
 
+
     private String appURI;
 
     @DataBoundConstructor
@@ -77,6 +78,10 @@ public class StackatoPushPublisher extends Recorder {
             listener.getLogger().println("optionalManifest.command: " + optionalManifest.command);
             listener.getLogger().println("optionalManifest.domain: " + optionalManifest.domain);
             listener.getLogger().println("optionalManifest.envVars: " + optionalManifest.envVars);
+            for (EnvironmentVariable envVar : optionalManifest.envVars) {
+                listener.getLogger().println("envVar.key: " + envVar.key);
+                listener.getLogger().println("envVar.value: " + envVar.value);
+            }
         } else {
             listener.getLogger().println("optionalManifest is null");
         }
@@ -148,7 +153,7 @@ public class StackatoPushPublisher extends Recorder {
             }
 
             // Add environment variables
-            if (deploymentInfo.getEnvVars() != null && !deploymentInfo.getEnvVars().isEmpty()) {
+            if (!deploymentInfo.getEnvVars().isEmpty()) {
                 client.updateApplicationEnv(appName, deploymentInfo.getEnvVars());
             }
 
@@ -294,14 +299,14 @@ public class StackatoPushPublisher extends Recorder {
         public final String command;
         public final String domain;
 
-        public final String envVars;
-        public final String servicesNames;
+        public final List<EnvironmentVariable> envVars;
+        public final List<ServiceName> servicesNames;
 
 
         @DataBoundConstructor
         public OptionalManifest(String appName, int memory, String hostname, int instances, int timeout,
                                 boolean noRoute, String appPath, String buildpack, String command, String domain,
-                                String envVars, String servicesNames) {
+                                List<EnvironmentVariable> envVars, List<ServiceName> servicesNames) {
             this.appName = appName;
             this.memory = memory;
             this.hostname = hostname;
@@ -314,6 +319,28 @@ public class StackatoPushPublisher extends Recorder {
             this.domain = domain;
             this.envVars = envVars;
             this.servicesNames = servicesNames;
+        }
+    }
+
+    public static class EnvironmentVariable {
+
+        public final String key;
+        public final String value;
+
+        @DataBoundConstructor
+        public EnvironmentVariable(String key, String value) {
+            this.key = key;
+            this.value = value;
+        }
+    }
+
+    public static class ServiceName {
+
+        public final String name;
+
+        @DataBoundConstructor
+        public ServiceName(String name) {
+            this.name = name;
         }
     }
 

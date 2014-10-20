@@ -3,6 +3,9 @@ package org.activestate.stackatojenkins;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Result;
+import org.activestate.stackatojenkins.StackatoPushPublisher.EnvironmentVariable;
+import org.activestate.stackatojenkins.StackatoPushPublisher.OptionalManifest;
+import org.activestate.stackatojenkins.StackatoPushPublisher.ServiceName;
 import org.apache.commons.io.FileUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.fluent.Request;
@@ -19,6 +22,7 @@ import org.jvnet.hudson.test.JenkinsRule;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -91,9 +95,10 @@ public class StackatoPushPublisherTest {
     public void testPerformSimplePushOptionalManifest() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
         project.setScm(new ExtractResourceSCM(getClass().getResource("hello-java.zip")));
-        StackatoPushPublisher.OptionalManifest manifest =
-                new StackatoPushPublisher.OptionalManifest("hello-java", 512, "", 0, 0, false,
-                        "target/hello-java-1.0.war", "", "", "", "", "");
+        OptionalManifest manifest =
+                new OptionalManifest("hello-java", 512, "", 0, 0, false,
+                        "target/hello-java-1.0.war", "", "", "", 
+                        new ArrayList<EnvironmentVariable>(), new ArrayList<ServiceName>());
         StackatoPushPublisher stackato =
                 new StackatoPushPublisher(TEST_TARGET, TEST_ORG, TEST_SPACE, TEST_USERNAME, TEST_PASSWORD, manifest);
         project.getPublishersList().add(stackato);
@@ -121,9 +126,10 @@ public class StackatoPushPublisherTest {
     public void testPerformMultipleInstances() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
         project.setScm(new ExtractResourceSCM(getClass().getResource("hello-java.zip")));
-        StackatoPushPublisher.OptionalManifest manifest =
-                new StackatoPushPublisher.OptionalManifest("hello-java", 64, "", 4, 0, false,
-                        "target/hello-java-1.0.war", "", "", "", "", "");
+        OptionalManifest manifest =
+                new OptionalManifest("hello-java", 64, "", 4, 0, false,
+                        "target/hello-java-1.0.war", "", "", "",
+                        new ArrayList<EnvironmentVariable>(), new ArrayList<ServiceName>());
         StackatoPushPublisher stackato =
                 new StackatoPushPublisher(TEST_TARGET, TEST_ORG, TEST_SPACE, TEST_USERNAME, TEST_PASSWORD, manifest);
         project.getPublishersList().add(stackato);
@@ -135,6 +141,7 @@ public class StackatoPushPublisherTest {
 
         assertTrue("Build did not succeed", build.getResult().isBetterOrEqualTo(Result.SUCCESS));
         assertTrue("Build did not display staging logs", log.contains("Downloaded app package"));
+        assertTrue("Not the correct amount of instances", log.contains("4 instances running out of 4"));
 
         System.out.println("stackato.getAppURI() = " + stackato.getAppURI());
         String uri = stackato.getAppURI();
@@ -151,9 +158,10 @@ public class StackatoPushPublisherTest {
     public void testPerformCustomBuildpack() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
         project.setScm(new ExtractResourceSCM(getClass().getResource("heroku-node-js-sample.zip")));
-        StackatoPushPublisher.OptionalManifest manifest =
-                new StackatoPushPublisher.OptionalManifest("heroku-node-js-sample", 512, "", 1, 60, false, "",
-                        "https://github.com/heroku/heroku-buildpack-nodejs", "", "", "", "");
+        OptionalManifest manifest =
+                new OptionalManifest("heroku-node-js-sample", 512, "", 1, 60, false, "",
+                        "https://github.com/heroku/heroku-buildpack-nodejs", "", "",
+                        new ArrayList<EnvironmentVariable>(), new ArrayList<ServiceName>());
         StackatoPushPublisher stackato =
                 new StackatoPushPublisher(TEST_TARGET, TEST_ORG, TEST_SPACE, TEST_USERNAME, TEST_PASSWORD, manifest);
         project.getPublishersList().add(stackato);
@@ -165,7 +173,6 @@ public class StackatoPushPublisherTest {
 
         assertTrue("Build did not succeed", build.getResult().isBetterOrEqualTo(Result.SUCCESS));
         assertTrue("Build did not display staging logs", log.contains("Downloading and installing node"));
-        assertTrue("Not the correct amount of instances", log.contains("4 instances running out of 4"));
 
         System.out.println("stackato.getAppURI() = " + stackato.getAppURI());
         String uri = stackato.getAppURI();
@@ -182,9 +189,10 @@ public class StackatoPushPublisherTest {
     public void testPerformCustomTimeout() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
         project.setScm(new ExtractResourceSCM(getClass().getResource("hello-java.zip")));
-        StackatoPushPublisher.OptionalManifest manifest =
-                new StackatoPushPublisher.OptionalManifest("hello-java", 512, "", 0, 4, false,
-                        "target/hello-java-1.0.war", "", "", "", "", "");
+        OptionalManifest manifest =
+                new OptionalManifest("hello-java", 512, "", 0, 4, false,
+                        "target/hello-java-1.0.war", "", "", "",
+                        new ArrayList<EnvironmentVariable>(), new ArrayList<ServiceName>());
         StackatoPushPublisher stackato =
                 new StackatoPushPublisher(TEST_TARGET, TEST_ORG, TEST_SPACE, TEST_USERNAME, TEST_PASSWORD, manifest);
         project.getPublishersList().add(stackato);
@@ -195,7 +203,7 @@ public class StackatoPushPublisherTest {
         System.out.println(log);
 
         assertTrue("Build succeeded where it should have failed", build.getResult().isWorseOrEqualTo(Result.FAILURE));
-        assertTrue("Build did not display staging logs", log.contains("Downloading and installing node"));
+        assertTrue("Build did not display staging logs", log.contains("Downloaded app package"));
         assertTrue("Build did not display proper error message",
                 log.contains("ERROR: The application failed to start after"));
     }
@@ -273,9 +281,10 @@ public class StackatoPushPublisherTest {
     public void testPerformNoRoute() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
         project.setScm(new ExtractResourceSCM(getClass().getResource("hello-java.zip")));
-        StackatoPushPublisher.OptionalManifest manifest =
-                new StackatoPushPublisher.OptionalManifest("hello-java", 512, "", 0, 0, true,
-                        "target/hello-java-1.0.war", "", "", "", "", "");
+        OptionalManifest manifest =
+                new OptionalManifest("hello-java", 512, "", 0, 0, true,
+                        "target/hello-java-1.0.war", "", "", "",
+                        new ArrayList<EnvironmentVariable>(), new ArrayList<ServiceName>());
         StackatoPushPublisher stackato =
                 new StackatoPushPublisher(TEST_TARGET, TEST_ORG, TEST_SPACE, TEST_USERNAME, TEST_PASSWORD, manifest);
         project.getPublishersList().add(stackato);

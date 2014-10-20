@@ -1,5 +1,8 @@
 package org.activestate.stackatojenkins;
 
+import org.activestate.stackatojenkins.StackatoPushPublisher.EnvironmentVariable;
+import org.activestate.stackatojenkins.StackatoPushPublisher.OptionalManifest;
+import org.activestate.stackatojenkins.StackatoPushPublisher.ServiceName;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -10,8 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 
 public class DeploymentInfoTest {
 
@@ -65,19 +67,23 @@ public class DeploymentInfoTest {
         assertNull(deploymentInfo.getBuildpack());
         assertNull(deploymentInfo.getCommand());
 
-        assertNull(deploymentInfo.getEnvVars());
-        assertNull(deploymentInfo.getServicesNames());
+        assertTrue(deploymentInfo.getEnvVars().isEmpty());
+        assertTrue(deploymentInfo.getServicesNames().isEmpty());
     }
 
 
     @Test
     public void testOptionalJenkinsConfigAllOptions() throws Exception {
-        String envVars = "ENV_VAR_ONE: value1\n" +
-                "ENV_VAR_TWO: value2\n" +
-                "ENV_VAR_THREE: value3";
-        String services = "service_name_one, service_name_two, service_name_three";
-        StackatoPushPublisher.OptionalManifest jenkinsManifest =
-                new StackatoPushPublisher.OptionalManifest("hello-java", 512, "testhost", 4, 42, true,
+        List<EnvironmentVariable> envVars = new ArrayList<EnvironmentVariable>();
+        envVars.add(new EnvironmentVariable("ENV_VAR_ONE", "value1"));
+        envVars.add(new EnvironmentVariable("ENV_VAR_TWO", "value2"));
+        envVars.add(new EnvironmentVariable("ENV_VAR_THREE", "value3"));
+        List<ServiceName> services = new ArrayList<ServiceName>();
+        services.add(new ServiceName("service_name_one"));
+        services.add(new ServiceName("service_name_two"));
+        services.add(new ServiceName("service_name_three"));
+        OptionalManifest jenkinsManifest =
+                new OptionalManifest("hello-java", 512, "testhost", 4, 42, true,
                         "target/hello-java-1.0.war",
                         "https://github.com/heroku/heroku-buildpack-hello",
                         "echo Hello", "testdomain.local", envVars, services);
@@ -110,8 +116,9 @@ public class DeploymentInfoTest {
 
     @Test
     public void testReadJenkinsConfigDefaultOptions() throws Exception {
-        StackatoPushPublisher.OptionalManifest jenkinsManifest =
-                new StackatoPushPublisher.OptionalManifest("", 0, "", 0, 0, false, "", "", "", "", "", "");
+        OptionalManifest jenkinsManifest =
+                new OptionalManifest("", 0, "", 0, 0, false, "", "", "", "",
+                        new ArrayList<EnvironmentVariable>(), new ArrayList<ServiceName>());
         DeploymentInfo deploymentInfo =
                 new DeploymentInfo(System.out, null, jenkinsManifest, "jenkins-build-name", "domain-name");
 
@@ -126,7 +133,7 @@ public class DeploymentInfoTest {
         assertNull(deploymentInfo.getBuildpack());
         assertNull(deploymentInfo.getCommand());
 
-        assertNull(deploymentInfo.getEnvVars());
-        assertNull(deploymentInfo.getServicesNames());
+        assertTrue(deploymentInfo.getEnvVars().isEmpty());
+        assertTrue(deploymentInfo.getServicesNames().isEmpty());
     }
 }

@@ -16,32 +16,54 @@
     <f:password/>
   </f:entry>
 
-
-  <f:optionalBlock field="optionalManifest" name="optionalManifest" title="Read app info from manifest.yml file"
+  <f:optionalBlock field="optionalManifest" title="Read app info from manifest.yml file"
                    negative="true" checked="${instance.optionalManifest == null}">
     <f:entry title="Application Name" field="appName">
-      <f:textbox default="${instance.optionalManifest.appName}"/>
+      <f:textbox value="${instance.optionalManifest.appName}"/>
     </f:entry>
     <f:entry title="Memory" field="memory">
-      <f:textbox default="${instance.optionalManifest.memory}"/>
+      <f:textbox value="${instance.optionalManifest.memory}"/>
     </f:entry>
     <f:entry title="Custom buildpack" field="buildpack">
-      <f:textbox default="${instance.optionalManifest.buildpack}"/>
+      <f:textbox value="${instance.optionalManifest.buildpack}"/>
     </f:entry>
-    <f:entry title="Hostname" field="hostname">
-      <f:textbox default="${instance.optionalManifest.hostname}"/>
+    <f:entry title="Hostname" field="hostname" description="bob">
+      <f:textbox value="${instance.optionalManifest.hostname}"/>
     </f:entry>
     <f:entry title="Instances" field="instances">
-      <f:textbox default="${instance.optionalManifest.instances}"/>
+      <f:textbox value="${instance.optionalManifest.instances}"/>
     </f:entry>
     <f:entry title="Timeout" field="timeout">
-      <f:textbox default="${instance.optionalManifest.timeout}"/>
+      <f:textbox value="${instance.optionalManifest.timeout}"/>
     </f:entry>
-    <f:entry title="Environment Variables" field="envVars">
-      <f:expandableTextbox default="${instance.optionalManifest.envVars}"/>
+
+    <f:entry title="Environment Variables">
+      <f:repeatable var="envVars" items="${instance.optionalManifest.envVars}">
+        <table width="100%">
+          <f:entry title="Key" field="key">
+            <f:textbox value="${envVars.key}"/>
+          </f:entry>
+          <f:entry title="Value" field="value">
+            <f:textbox value="${envVars.value}"/>
+          </f:entry>
+        </table>
+        <div align="right">
+          <f:repeatableDeleteButton/>
+        </div>
+      </f:repeatable>
     </f:entry>
-    <f:entry title="Services" field="servicesNames">
-      <f:expandableTextbox default="${instance.optionalManifest.servicesNames}"/>
+
+    <f:entry title="Services">
+      <f:repeatable var="services" items="${instance.optionalManifest.services}">
+        <table width="100%">
+          <f:entry title="Name" field="name">
+            <f:textbox value="${envVars.name}"/>
+          </f:entry>
+        </table>
+        <div align="right">
+          <f:repeatableDeleteButton/>
+        </div>
+      </f:repeatable>
     </f:entry>
 
     <f:advanced>

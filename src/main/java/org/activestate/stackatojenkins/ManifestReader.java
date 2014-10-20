@@ -17,7 +17,7 @@ public class ManifestReader {
     private final File manifestFile;
     private List<Map<String, Object>> applicationList;
 
-    public ManifestReader(File manifestFile) throws ManifestParsingException, IOException, InterruptedException {
+    public ManifestReader(File manifestFile) throws ManifestParsingException, IOException {
         this.manifestFile = manifestFile;
         this.applicationList = parseManifest();
     }

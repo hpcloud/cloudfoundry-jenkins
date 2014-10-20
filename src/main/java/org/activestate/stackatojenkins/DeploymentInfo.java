@@ -1,12 +1,17 @@
 package org.activestate.stackatojenkins;
 
 import org.activestate.stackatojenkins.StackatoPushPublisher.OptionalManifest;
+import org.activestate.stackatojenkins.StackatoPushPublisher.EnvironmentVariable;
+import org.activestate.stackatojenkins.StackatoPushPublisher.ServiceName;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 
 public class DeploymentInfo {
 
@@ -25,8 +30,8 @@ public class DeploymentInfo {
     private String command;
     private String domain;
 
-    private Map<String, String> envVars;
-    private List<String> servicesNames;
+    private Map<String, String> envVars = new HashMap<String, String>();
+    private List<String> servicesNames = new ArrayList<String>();
 
     public DeploymentInfo(PrintStream logger, File manifestFile, OptionalManifest optionalManifest,
                           String jenkinsBuildName, String defaultDomain)
@@ -111,7 +116,9 @@ public class DeploymentInfo {
         try {
             @SuppressWarnings("unchecked")
             Map<String, String> envVarsSuppressed = (Map<String, String>) manifestJson.get("env");
-            this.envVars = envVarsSuppressed;
+            if (envVarsSuppressed != null) {
+                this.envVars = envVarsSuppressed;
+            }
         } catch (ClassCastException e) {
             logger.println("WARNING: Could not parse env vars into a map. Ignoring env vars.");
         }
@@ -119,7 +126,9 @@ public class DeploymentInfo {
         try {
             @SuppressWarnings("unchecked")
             List<String> servicesSuppressed = (List<String>) manifestJson.get("services");
-            this.servicesNames = servicesSuppressed;
+            if (servicesSuppressed != null) {
+                this.servicesNames = servicesSuppressed;
+            }
         } catch (ClassCastException e) {
             logger.println("WARNING: Could not parse services into a list. Ignoring services.");
         }
@@ -176,25 +185,14 @@ public class DeploymentInfo {
             appPath = ".";
         }
 
-        String manifestEnvVars = optionalManifest.envVars;
-        if (!manifestEnvVars.isEmpty()) {
-            String[] individualVars = manifestEnvVars.split("\n");
-            for (String var : individualVars) {
-                String[] split = var.split(":");
-                if (split.length >= 2) {
-                    this.envVars.put(split[0].trim(), split[1].trim());
-                } else {
-                    logger.println("WARNING: Malformed env vars settings. Ignoring.");
-                }
-            }
+        List<EnvironmentVariable> manifestEnvVars = optionalManifest.envVars;
+        for (EnvironmentVariable var : manifestEnvVars) {
+            this.envVars.put(var.key, var.value);
         }
 
-        String servicesNames = optionalManifest.servicesNames;
-        if (!servicesNames.isEmpty()) {
-            String[] individualServices = servicesNames.split(",");
-            for (String service : individualServices) {
-                this.servicesNames.add(service.trim());
-            }
+        List<ServiceName> manifestServicesNames = optionalManifest.servicesNames;
+        for (ServiceName service : manifestServicesNames) {
+            this.servicesNames.add(service.name);
         }
     }
 
