@@ -19,11 +19,13 @@ import org.cloudfoundry.client.lib.domain.*;
 import org.cloudfoundry.client.lib.org.springframework.web.client.ResourceAccessException;
 import org.kohsuke.stapler.DataBoundConstructor;
 
+import javax.net.ssl.SSLPeerUnverifiedException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -250,7 +252,13 @@ public class StackatoPushPublisher extends Recorder {
             listener.getLogger().println("ERROR: The target URL is not valid: " + e.getMessage());
             return false;
         } catch (ResourceAccessException e) {
-            listener.getLogger().println("ERROR: Unknown host: " + e.getMessage());
+            if (e.getCause() instanceof UnknownHostException) {
+                listener.getLogger().println("ERROR: Unknown host: " + e.getMessage());
+            } else if (e.getCause() instanceof SSLPeerUnverifiedException) {
+                listener.getLogger().println("ERROR: Certificate is not in Java's keystore: " + e.getMessage());
+            } else {
+                listener.getLogger().println("ERROR: Unknown ResourceAccessException: " + e.getMessage());
+            }
             return false;
         } catch (CloudFoundryException e) {
             if (e.getMessage().equals("403 Access token denied.")) {
