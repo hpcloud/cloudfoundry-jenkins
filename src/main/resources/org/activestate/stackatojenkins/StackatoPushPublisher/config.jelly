@@ -27,7 +27,7 @@
     <f:entry title="Custom buildpack" field="buildpack">
       <f:textbox value="${instance.optionalManifest.buildpack}"/>
     </f:entry>
-    <f:entry title="Hostname" field="hostname" description="bob">
+    <f:entry title="Hostname" field="hostname">
       <f:textbox value="${instance.optionalManifest.hostname}"/>
     </f:entry>
     <f:entry title="Instances" field="instances">

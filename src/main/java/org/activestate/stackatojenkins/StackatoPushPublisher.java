@@ -11,6 +11,7 @@ import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Publisher;
 import hudson.tasks.Recorder;
+import hudson.util.FormValidation;
 import org.cloudfoundry.client.lib.CloudCredentials;
 import org.cloudfoundry.client.lib.CloudFoundryClient;
 import org.cloudfoundry.client.lib.CloudFoundryException;
@@ -18,6 +19,7 @@ import org.cloudfoundry.client.lib.StartingInfo;
 import org.cloudfoundry.client.lib.domain.*;
 import org.cloudfoundry.client.lib.org.springframework.web.client.ResourceAccessException;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.QueryParameter;
 
 import javax.net.ssl.SSLPeerUnverifiedException;
 import java.io.File;
@@ -61,32 +63,6 @@ public class StackatoPushPublisher extends Recorder {
         // We don't want to push if the build failed
         if (build.getResult().isWorseThan(Result.SUCCESS))
             return true;
-
-        listener.getLogger().println("target: " + target);
-        listener.getLogger().println("organization: " + organization);
-        listener.getLogger().println("cloudSpace: " + cloudSpace);
-        listener.getLogger().println("username: " + username);
-        listener.getLogger().println("password: " + password);
-        if (optionalManifest != null) {
-            listener.getLogger().println("optionalManifest: " + optionalManifest);
-            listener.getLogger().println("optionalManifest.appName: " + optionalManifest.appName);
-            listener.getLogger().println("optionalManifest.memory: " + optionalManifest.memory);
-            listener.getLogger().println("optionalManifest.hostname: " + optionalManifest.hostname);
-            listener.getLogger().println("optionalManifest.instances: " + optionalManifest.instances);
-            listener.getLogger().println("optionalManifest.timeout: " + optionalManifest.timeout);
-            listener.getLogger().println("optionalManifest.noRoute: " + optionalManifest.noRoute);
-            listener.getLogger().println("optionalManifest.appPath: " + optionalManifest.appPath);
-            listener.getLogger().println("optionalManifest.buildpack: " + optionalManifest.buildpack);
-            listener.getLogger().println("optionalManifest.command: " + optionalManifest.command);
-            listener.getLogger().println("optionalManifest.domain: " + optionalManifest.domain);
-            listener.getLogger().println("optionalManifest.envVars: " + optionalManifest.envVars);
-            for (EnvironmentVariable envVar : optionalManifest.envVars) {
-                listener.getLogger().println("envVar.key: " + envVar.key);
-                listener.getLogger().println("envVar.value: " + envVar.value);
-            }
-        } else {
-            listener.getLogger().println("optionalManifest is null");
-        }
 
         try {
             String jenkinsBuildName = build.getProject().getDisplayName();
