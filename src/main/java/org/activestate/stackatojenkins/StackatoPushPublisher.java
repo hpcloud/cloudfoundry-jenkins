@@ -341,5 +341,64 @@ public class StackatoPushPublisher extends Recorder {
             return "Push to Stackato";
         }
 
+
+        public FormValidation doCheckTarget(@QueryParameter String value) {
+            URL targetUrl = null;
+
+            try {
+                targetUrl = new URL(value);
+            } catch (MalformedURLException e) {
+                return FormValidation.error("Malformed URL");
+            }
+
+            try {
+                CloudFoundryClient client = new CloudFoundryClient(targetUrl);
+                client.getCloudInfo();
+            } catch (ResourceAccessException e) {
+                if (e.getCause() instanceof UnknownHostException) {
+                    return FormValidation.error("Unknown host");
+                } else if (e.getCause() instanceof SSLPeerUnverifiedException) {
+                    return FormValidation.error("Certificate is not in Java's keystore");
+                } else {
+                    return FormValidation.error(e, "Unknown ResourceAccessException");
+                }
+            } catch (CloudFoundryException e) {
+                if (e.getMessage().equals("404 Not Found")) {
+                    return FormValidation.error("Could not find CF API info (Did you forget to add 'api.'?)");
+                } else {
+                    return FormValidation.error(e, "Unknown CloudFoundryException");
+                }
+            } catch (Exception e) {
+                return FormValidation.error(e.toString());
+            }
+
+            return FormValidation.ok();
+        }
+
+        public FormValidation doCheckMemory(@QueryParameter String value) {
+            return FormValidation.validatePositiveInteger(value);
+        }
+
+        public FormValidation doCheckInstances(@QueryParameter String value) {
+            return FormValidation.validatePositiveInteger(value);
+        }
+
+        public FormValidation doCheckTimeout(@QueryParameter String value) {
+            return FormValidation.validatePositiveInteger(value);
+        }
+
+//        private FormValidation mustBePositiveNumber(String value) {
+//            if (!value.isEmpty()) {
+//                try {
+//                    int intValue = Integer.parseInt(value);
+//                    if (intValue <= 0) {
+//                        return FormValidation.error("Must be positive");
+//                    }
+//                } catch (NumberFormatException e) {
+//                    return FormValidation.error("Not a number");
+//                }
+//            }
+//            return FormValidation.ok();
+//        }
     }
 }
