@@ -3,18 +3,20 @@
   <f:entry title="Target" field="target">
     <f:textbox/>
   </f:entry>
-  <f:entry title="Organization" field="organization">
-    <f:textbox/>
-  </f:entry>
-  <f:entry title="Space" field="cloudSpace">
-    <f:textbox/>
-  </f:entry>
   <f:entry title="Username or Email" field="username">
     <f:textbox/>
   </f:entry>
   <f:entry title="Password" field="password">
     <f:password/>
   </f:entry>
+  <f:entry title="Organization" field="organization">
+    <f:textbox/>
+  </f:entry>
+  <f:entry title="Space" field="cloudSpace">
+    <f:textbox/>
+  </f:entry>
+  <f:validateButton title="Test Connection" progress="Testing..."
+                    method="testConnection" with="target,username,password,organization,cloudSpace"/>
 
   <f:optionalBlock field="optionalManifest" title="Read app info from manifest.yml file"
                    negative="true" checked="${instance.optionalManifest == null}">
@@ -27,14 +29,14 @@
     <f:entry title="Hostname" field="hostname">
       <f:textbox value="${instance.optionalManifest.hostname}" default="${it.displayName}"/>
     </f:entry>
-    <f:entry title="Custom buildpack" field="buildpack">
-      <f:textbox value="${instance.optionalManifest.buildpack}"/>
-    </f:entry>
     <f:entry title="Instances" field="instances">
       <f:textbox value="${instance.optionalManifest.instances}" default="${descriptor.DEFAULT_INSTANCES}"/>
     </f:entry>
     <f:entry title="Timeout (s)" field="timeout">
       <f:textbox value="${instance.optionalManifest.timeout}" default="${descriptor.DEFAULT_TIMEOUT}"/>
+    </f:entry>
+    <f:entry title="Custom buildpack" field="buildpack">
+      <f:textbox value="${instance.optionalManifest.buildpack}"/>
     </f:entry>
 
     <f:entry title="Environment Variables">

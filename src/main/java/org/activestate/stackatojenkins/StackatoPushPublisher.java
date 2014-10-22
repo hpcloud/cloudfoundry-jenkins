@@ -346,40 +346,79 @@ public class StackatoPushPublisher extends Recorder {
         }
 
         @SuppressWarnings("unused")
-        public FormValidation doCheckTarget(@QueryParameter String value) {
-            if(value.isEmpty()) {
-                return FormValidation.error("Required field");
-            }
-
-            URL targetUrl;
-            try {
-                targetUrl = new URL(value);
-            } catch (MalformedURLException e) {
-                return FormValidation.error("Malformed URL");
-            }
+        public FormValidation doTestConnection(@QueryParameter("target") final String target,
+                                               @QueryParameter("username") final String username,
+                                               @QueryParameter("password") final String password,
+                                               @QueryParameter("organization") final String organization,
+                                               @QueryParameter("cloudSpace") final String cloudSpace) {
 
             try {
-                CloudFoundryClient client = new CloudFoundryClient(targetUrl);
+                URL targetUrl = new URL(target);
+                CloudCredentials credentials = new CloudCredentials(username, password);
+                CloudFoundryClient client = new CloudFoundryClient(credentials, targetUrl, organization, cloudSpace);
+                client.login();
                 client.getCloudInfo();
+            } catch (MalformedURLException e) {
+                return FormValidation.error("Malformed target URL");
             } catch (ResourceAccessException e) {
                 if (e.getCause() instanceof UnknownHostException) {
                     return FormValidation.error("Unknown host");
                 } else if (e.getCause() instanceof SSLPeerUnverifiedException) {
-                    return FormValidation.error("Certificate is not in Java's keystore");
+                    return FormValidation.error("Target's certificate is not in the Java keystore");
                 } else {
                     return FormValidation.error(e, "Unknown ResourceAccessException");
                 }
             } catch (CloudFoundryException e) {
                 if (e.getMessage().equals("404 Not Found")) {
                     return FormValidation.error("Could not find CF API info (Did you forget to add 'api.'?)");
+                } else if (e.getMessage().equals("403 Access token denied.")) {
+                    return FormValidation.error("Wrong username or password");
                 } else {
                     return FormValidation.error(e, "Unknown CloudFoundryException");
                 }
+            }catch (IllegalArgumentException e) {
+                if (e.getMessage().contains("No matching organization and space found")) {
+                    return FormValidation.error("Could not find Organization or Space");
+                } else {
+                    return FormValidation.error(e, "Unknown IllegalArgumentException");
+                }
             } catch (Exception e) {
-                return FormValidation.error(e.toString());
+                return FormValidation.error(e, "Unknown Exception");
             }
 
-            return FormValidation.ok();
+            return FormValidation.okWithMarkup("<b>Connection successful!</b>");
+        }
+
+        @SuppressWarnings("unused")
+        public FormValidation doCheckTarget(@QueryParameter String value) {
+            if (!value.isEmpty()) {
+                try {
+                    URL targetUrl = new URL(value);
+                } catch (MalformedURLException e) {
+                    return FormValidation.error("Malformed URL");
+                }
+            }
+            return FormValidation.validateRequired(value);
+        }
+
+        @SuppressWarnings("unused")
+        public FormValidation doCheckUsername(@QueryParameter String value) {
+            return FormValidation.validateRequired(value);
+        }
+
+        @SuppressWarnings("unused")
+        public FormValidation doCheckPassword(@QueryParameter String value) {
+            return FormValidation.validateRequired(value);
+        }
+
+        @SuppressWarnings("unused")
+        public FormValidation doCheckOrganization(@QueryParameter String value) {
+            return FormValidation.validateRequired(value);
+        }
+
+        @SuppressWarnings("unused")
+        public FormValidation doCheckCloudSpace(@QueryParameter String value) {
+            return FormValidation.validateRequired(value);
         }
 
         @SuppressWarnings("unused")
@@ -395,6 +434,16 @@ public class StackatoPushPublisher extends Recorder {
         @SuppressWarnings("unused")
         public FormValidation doCheckTimeout(@QueryParameter String value) {
             return FormValidation.validatePositiveInteger(value);
+        }
+
+        @SuppressWarnings("unused")
+        public FormValidation doCheckAppName(@QueryParameter String value) {
+            return FormValidation.validateRequired(value);
+        }
+
+        @SuppressWarnings("unused")
+        public FormValidation doCheckHostname(@QueryParameter String value) {
+            return FormValidation.validateRequired(value);
         }
     }
 }
