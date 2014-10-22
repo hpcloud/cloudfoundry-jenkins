@@ -59,7 +59,7 @@
       <f:repeatable var="services" items="${instance.optionalManifest.services}">
         <table width="100%">
           <f:entry title="Name" field="name">
-            <f:textbox value="${envVars.name}"/>
+            <f:textbox value="${services.name}"/>
           </f:entry>
         </table>
         <div align="right">
