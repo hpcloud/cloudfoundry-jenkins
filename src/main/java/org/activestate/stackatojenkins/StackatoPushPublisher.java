@@ -331,6 +331,10 @@ public class StackatoPushPublisher extends Recorder {
     @Extension
     public static final class DescriptorImpl extends BuildStepDescriptor<Publisher> {
 
+        public static final int DEFAULT_MEMORY = 512;
+        public static final int DEFAULT_INSTANCES = 1;
+        public static final int DEFAULT_TIMEOUT = 60;
+
         @Override
         public boolean isApplicable(Class<? extends AbstractProject> jobType) {
             return true;
@@ -341,10 +345,13 @@ public class StackatoPushPublisher extends Recorder {
             return "Push to Stackato";
         }
 
-
+        @SuppressWarnings("unused")
         public FormValidation doCheckTarget(@QueryParameter String value) {
-            URL targetUrl = null;
+            if(value.isEmpty()) {
+                return FormValidation.error("Required field");
+            }
 
+            URL targetUrl;
             try {
                 targetUrl = new URL(value);
             } catch (MalformedURLException e) {
@@ -375,30 +382,19 @@ public class StackatoPushPublisher extends Recorder {
             return FormValidation.ok();
         }
 
+        @SuppressWarnings("unused")
         public FormValidation doCheckMemory(@QueryParameter String value) {
             return FormValidation.validatePositiveInteger(value);
         }
 
+        @SuppressWarnings("unused")
         public FormValidation doCheckInstances(@QueryParameter String value) {
             return FormValidation.validatePositiveInteger(value);
         }
 
+        @SuppressWarnings("unused")
         public FormValidation doCheckTimeout(@QueryParameter String value) {
             return FormValidation.validatePositiveInteger(value);
         }
-
-//        private FormValidation mustBePositiveNumber(String value) {
-//            if (!value.isEmpty()) {
-//                try {
-//                    int intValue = Integer.parseInt(value);
-//                    if (intValue <= 0) {
-//                        return FormValidation.error("Must be positive");
-//                    }
-//                } catch (NumberFormatException e) {
-//                    return FormValidation.error("Not a number");
-//                }
-//            }
-//            return FormValidation.ok();
-//        }
     }
 }

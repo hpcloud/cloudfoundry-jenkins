@@ -1,8 +1,6 @@
 package org.activestate.stackatojenkins;
 
-import org.activestate.stackatojenkins.StackatoPushPublisher.OptionalManifest;
-import org.activestate.stackatojenkins.StackatoPushPublisher.EnvironmentVariable;
-import org.activestate.stackatojenkins.StackatoPushPublisher.ServiceName;
+import org.activestate.stackatojenkins.StackatoPushPublisher.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -12,12 +10,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.activestate.stackatojenkins.StackatoPushPublisher.DescriptorImpl.*;
+
 
 public class DeploymentInfo {
-
-    public static final int DEFAULT_MEMORY = 512;
-    public static final int DEFAULT_INSTANCES = 1;
-    public static final int DEFAULT_TIMEOUT = 60;
 
     private String appName;
     private int memory;

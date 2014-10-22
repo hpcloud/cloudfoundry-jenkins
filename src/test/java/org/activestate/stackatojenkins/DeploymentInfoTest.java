@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.*;
+import static org.activestate.stackatojenkins.StackatoPushPublisher.DescriptorImpl.*;
 
 public class DeploymentInfoTest {
 
@@ -57,10 +58,10 @@ public class DeploymentInfoTest {
                 new DeploymentInfo(System.out, manifestFile, null, "jenkins-build-name", "domain-name");
 
         assertEquals("jenkins-build-name", deploymentInfo.getAppName());
-        assertEquals(DeploymentInfo.DEFAULT_MEMORY, deploymentInfo.getMemory());
+        assertEquals(DEFAULT_MEMORY, deploymentInfo.getMemory());
         assertEquals("jenkins-build-name", deploymentInfo.getHostname());
-        assertEquals(DeploymentInfo.DEFAULT_INSTANCES, deploymentInfo.getInstances());
-        assertEquals(DeploymentInfo.DEFAULT_TIMEOUT, deploymentInfo.getTimeout());
+        assertEquals(DEFAULT_INSTANCES, deploymentInfo.getInstances());
+        assertEquals(DEFAULT_TIMEOUT, deploymentInfo.getTimeout());
         assertEquals(false, deploymentInfo.isNoRoute());
         assertEquals("domain-name", deploymentInfo.getDomain());
         assertEquals(".", deploymentInfo.getAppPath());
@@ -123,10 +124,10 @@ public class DeploymentInfoTest {
                 new DeploymentInfo(System.out, null, jenkinsManifest, "jenkins-build-name", "domain-name");
 
         assertEquals("jenkins-build-name", deploymentInfo.getAppName());
-        assertEquals(DeploymentInfo.DEFAULT_MEMORY, deploymentInfo.getMemory());
+        assertEquals(DEFAULT_MEMORY, deploymentInfo.getMemory());
         assertEquals("jenkins-build-name", deploymentInfo.getHostname());
-        assertEquals(DeploymentInfo.DEFAULT_INSTANCES, deploymentInfo.getInstances());
-        assertEquals(DeploymentInfo.DEFAULT_TIMEOUT, deploymentInfo.getTimeout());
+        assertEquals(DEFAULT_INSTANCES, deploymentInfo.getInstances());
+        assertEquals(DEFAULT_TIMEOUT, deploymentInfo.getTimeout());
         assertEquals(false, deploymentInfo.isNoRoute());
         assertEquals("domain-name", deploymentInfo.getDomain());
         assertEquals(".", deploymentInfo.getAppPath());

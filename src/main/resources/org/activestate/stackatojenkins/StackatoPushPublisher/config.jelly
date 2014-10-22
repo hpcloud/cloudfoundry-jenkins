@@ -19,22 +19,22 @@
   <f:optionalBlock field="optionalManifest" title="Read app info from manifest.yml file"
                    negative="true" checked="${instance.optionalManifest == null}">
     <f:entry title="Application Name" field="appName">
-      <f:textbox value="${instance.optionalManifest.appName}"/>
+      <f:textbox value="${instance.optionalManifest.appName}" default="${it.displayName}"/>
     </f:entry>
-    <f:entry title="Memory" field="memory">
-      <f:textbox value="${instance.optionalManifest.memory}"/>
+    <f:entry title="Memory (MB)" field="memory">
+      <f:textbox value="${instance.optionalManifest.memory}" default="${descriptor.DEFAULT_MEMORY}"/>
+    </f:entry>
+    <f:entry title="Hostname" field="hostname">
+      <f:textbox value="${instance.optionalManifest.hostname}" default="${it.displayName}"/>
     </f:entry>
     <f:entry title="Custom buildpack" field="buildpack">
       <f:textbox value="${instance.optionalManifest.buildpack}"/>
     </f:entry>
-    <f:entry title="Hostname" field="hostname">
-      <f:textbox value="${instance.optionalManifest.hostname}"/>
-    </f:entry>
     <f:entry title="Instances" field="instances">
-      <f:textbox value="${instance.optionalManifest.instances}"/>
+      <f:textbox value="${instance.optionalManifest.instances}" default="${descriptor.DEFAULT_INSTANCES}"/>
     </f:entry>
-    <f:entry title="Timeout" field="timeout">
-      <f:textbox value="${instance.optionalManifest.timeout}"/>
+    <f:entry title="Timeout (s)" field="timeout">
+      <f:textbox value="${instance.optionalManifest.timeout}" default="${descriptor.DEFAULT_TIMEOUT}"/>
     </f:entry>
 
     <f:entry title="Environment Variables">
