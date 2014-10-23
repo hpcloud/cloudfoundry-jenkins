@@ -69,17 +69,9 @@ public class StackatoPushPublisher extends Recorder {
         try {
             String jenkinsBuildName = build.getProject().getDisplayName();
 
-            String fullTarget = target;
-            if (!fullTarget.startsWith("https://")) {
-                if (!fullTarget.startsWith("api.")) {
-                    fullTarget = "https://api." + fullTarget;
-                } else {
-                    fullTarget = "https://" + fullTarget;
-                }
-            }
-            URL targetUrl = new URL(fullTarget);
+            URL targetUrl = new URL(target);
 
-            String[] split = fullTarget.split("\\.");
+            String[] split = target.split("\\.");
             String domain = split[split.length - 2] + "." + split[split.length - 1];
 
             FilePath manifestFilePath = new FilePath(build.getWorkspace(), DEFAULT_MANIFEST_PATH);
@@ -89,19 +81,12 @@ public class StackatoPushPublisher extends Recorder {
             String appName = deploymentInfo.getAppName();
             setAppURI("https://" + deploymentInfo.getHostname() + "." + deploymentInfo.getDomain());
 
-            listener.getLogger().println("Logging to stackato with: " + username + "/" + password);
-            listener.getLogger().println("Target URL: " + targetUrl.getHost());
-            listener.getLogger().println("Org: " + organization);
-            listener.getLogger().println("Space: " + cloudSpace);
-            listener.getLogger().println("Calculated uri: " + getAppURI());
-
-
             CloudCredentials credentials = new CloudCredentials(username, password);
             CloudFoundryClient client = new CloudFoundryClient(credentials, targetUrl, organization, cloudSpace,
                     null, selfSigned);
             client.login();
 
-            listener.getLogger().println("Pushing " + appName + " app to " + fullTarget);
+            listener.getLogger().println("Pushing " + appName + " app to " + target);
 
             // Check if app already exists
             List<CloudApplication> existingApps = client.getApplications();
@@ -114,8 +99,9 @@ public class StackatoPushPublisher extends Recorder {
                 }
             }
 
-            // TODO: Create services
+            // This is where we would create services, if we decide to add that feature.
             // List<CloudService> cloudServices = deploymentInfo.getServices();
+            // client.createService();
 
             // Create app if it doesn't exist
             if (!alreadyExists) {

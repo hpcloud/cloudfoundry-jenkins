@@ -68,8 +68,8 @@ public class StackatoPushPublisherTest {
     public void testPerformSimplePushManifestFile() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
         project.setScm(new ExtractResourceSCM(getClass().getResource("hello-java.zip")));
-        StackatoPushPublisher stackato =
-                new StackatoPushPublisher(TEST_TARGET, TEST_ORG, TEST_SPACE, TEST_USERNAME, TEST_PASSWORD, null);
+        StackatoPushPublisher stackato = new StackatoPushPublisher(TEST_TARGET, TEST_ORG, TEST_SPACE,
+                TEST_USERNAME, TEST_PASSWORD, false, null);
         project.getPublishersList().add(stackato);
         FreeStyleBuild build = project.scheduleBuild2(0).get();
         System.out.println(build.getDisplayName() + " completed");
@@ -99,8 +99,8 @@ public class StackatoPushPublisherTest {
                 new OptionalManifest("hello-java", 512, "", 0, 0, false,
                         "target/hello-java-1.0.war", "", "", "", 
                         new ArrayList<EnvironmentVariable>(), new ArrayList<ServiceName>());
-        StackatoPushPublisher stackato =
-                new StackatoPushPublisher(TEST_TARGET, TEST_ORG, TEST_SPACE, TEST_USERNAME, TEST_PASSWORD, manifest);
+        StackatoPushPublisher stackato = new StackatoPushPublisher(TEST_TARGET, TEST_ORG, TEST_SPACE,
+                TEST_USERNAME, TEST_PASSWORD, false, manifest);
         project.getPublishersList().add(stackato);
         FreeStyleBuild build = project.scheduleBuild2(0).get();
         System.out.println(build.getDisplayName() + " completed");
@@ -130,8 +130,8 @@ public class StackatoPushPublisherTest {
                 new OptionalManifest("hello-java", 64, "", 4, 0, false,
                         "target/hello-java-1.0.war", "", "", "",
                         new ArrayList<EnvironmentVariable>(), new ArrayList<ServiceName>());
-        StackatoPushPublisher stackato =
-                new StackatoPushPublisher(TEST_TARGET, TEST_ORG, TEST_SPACE, TEST_USERNAME, TEST_PASSWORD, manifest);
+        StackatoPushPublisher stackato = new StackatoPushPublisher(TEST_TARGET, TEST_ORG, TEST_SPACE,
+                        TEST_USERNAME, TEST_PASSWORD, false, manifest);
         project.getPublishersList().add(stackato);
         FreeStyleBuild build = project.scheduleBuild2(0).get();
         System.out.println(build.getDisplayName() + " completed");
@@ -162,8 +162,8 @@ public class StackatoPushPublisherTest {
                 new OptionalManifest("heroku-node-js-sample", 512, "", 1, 60, false, "",
                         "https://github.com/heroku/heroku-buildpack-nodejs", "", "",
                         new ArrayList<EnvironmentVariable>(), new ArrayList<ServiceName>());
-        StackatoPushPublisher stackato =
-                new StackatoPushPublisher(TEST_TARGET, TEST_ORG, TEST_SPACE, TEST_USERNAME, TEST_PASSWORD, manifest);
+        StackatoPushPublisher stackato = new StackatoPushPublisher(TEST_TARGET, TEST_ORG, TEST_SPACE,
+                        TEST_USERNAME, TEST_PASSWORD, false, manifest);
         project.getPublishersList().add(stackato);
         FreeStyleBuild build = project.scheduleBuild2(0).get();
         System.out.println(build.getDisplayName() + " completed");
@@ -190,11 +190,11 @@ public class StackatoPushPublisherTest {
         FreeStyleProject project = j.createFreeStyleProject();
         project.setScm(new ExtractResourceSCM(getClass().getResource("hello-java.zip")));
         OptionalManifest manifest =
-                new OptionalManifest("hello-java", 512, "", 0, 4, false,
+                new OptionalManifest("hello-java", 512, "", 0, 1, false,
                         "target/hello-java-1.0.war", "", "", "",
                         new ArrayList<EnvironmentVariable>(), new ArrayList<ServiceName>());
-        StackatoPushPublisher stackato =
-                new StackatoPushPublisher(TEST_TARGET, TEST_ORG, TEST_SPACE, TEST_USERNAME, TEST_PASSWORD, manifest);
+        StackatoPushPublisher stackato = new StackatoPushPublisher(TEST_TARGET, TEST_ORG, TEST_SPACE,
+                TEST_USERNAME, TEST_PASSWORD, false, manifest);
         project.getPublishersList().add(stackato);
         FreeStyleBuild build = project.scheduleBuild2(0).get();
         System.out.println(build.getDisplayName() + " completed");
@@ -212,8 +212,8 @@ public class StackatoPushPublisherTest {
     public void testPerformEnvVarsManifestFile() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
         project.setScm(new ExtractResourceSCM(getClass().getResource("python-env.zip")));
-        StackatoPushPublisher stackato =
-                new StackatoPushPublisher(TEST_TARGET, TEST_ORG, TEST_SPACE, TEST_USERNAME, TEST_PASSWORD, null);
+        StackatoPushPublisher stackato = new StackatoPushPublisher(TEST_TARGET, TEST_ORG, TEST_SPACE,
+                TEST_USERNAME, TEST_PASSWORD, false, null);
         project.getPublishersList().add(stackato);
         FreeStyleBuild build = project.scheduleBuild2(0).get();
         System.out.println(build.getDisplayName() + " completed");
@@ -253,8 +253,8 @@ public class StackatoPushPublisherTest {
 
         FreeStyleProject project = j.createFreeStyleProject();
         project.setScm(new ExtractResourceSCM(getClass().getResource("python-env-services.zip")));
-        StackatoPushPublisher stackato =
-                new StackatoPushPublisher(TEST_TARGET, TEST_ORG, TEST_SPACE, TEST_USERNAME, TEST_PASSWORD, null);
+        StackatoPushPublisher stackato = new StackatoPushPublisher(TEST_TARGET, TEST_ORG, TEST_SPACE,
+                TEST_USERNAME, TEST_PASSWORD, false , null);
         project.getPublishersList().add(stackato);
         FreeStyleBuild build = project.scheduleBuild2(0).get();
         System.out.println(build.getDisplayName() + " completed");
@@ -285,8 +285,8 @@ public class StackatoPushPublisherTest {
                 new OptionalManifest("hello-java", 512, "", 0, 0, true,
                         "target/hello-java-1.0.war", "", "", "",
                         new ArrayList<EnvironmentVariable>(), new ArrayList<ServiceName>());
-        StackatoPushPublisher stackato =
-                new StackatoPushPublisher(TEST_TARGET, TEST_ORG, TEST_SPACE, TEST_USERNAME, TEST_PASSWORD, manifest);
+        StackatoPushPublisher stackato = new StackatoPushPublisher(TEST_TARGET, TEST_ORG, TEST_SPACE,
+                TEST_USERNAME, TEST_PASSWORD, false, manifest);
         project.getPublishersList().add(stackato);
         FreeStyleBuild build = project.scheduleBuild2(0).get();
         System.out.println(build.getDisplayName() + " completed");
@@ -310,7 +310,7 @@ public class StackatoPushPublisherTest {
         FreeStyleProject project = j.createFreeStyleProject();
         project.setScm(new ExtractResourceSCM(getClass().getResource("hello-java.zip")));
         StackatoPushPublisher stackato = new StackatoPushPublisher("https://does-not-exist.local", TEST_ORG, TEST_SPACE,
-                TEST_USERNAME, TEST_PASSWORD, null);
+                TEST_USERNAME, TEST_PASSWORD, false, null);
         project.getPublishersList().add(stackato);
         FreeStyleBuild build = project.scheduleBuild2(0).get();
         System.out.println(build.getDisplayName() + " completed");
@@ -327,7 +327,7 @@ public class StackatoPushPublisherTest {
         FreeStyleProject project = j.createFreeStyleProject();
         project.setScm(new ExtractResourceSCM(getClass().getResource("hello-java.zip")));
         StackatoPushPublisher stackato = new StackatoPushPublisher(TEST_TARGET, TEST_ORG, TEST_SPACE,
-                "NotAdmin", "BadPassword", null);
+                "NotAdmin", "BadPassword", false, null);
         project.getPublishersList().add(stackato);
         FreeStyleBuild build = project.scheduleBuild2(0).get();
         System.out.println(build.getDisplayName() + " completed");
