@@ -41,6 +41,7 @@ public class StackatoPushPublisher extends Recorder {
     public final String cloudSpace;
     public final String username;
     public final String password;
+    public final boolean selfSigned;
     public final OptionalManifest optionalManifest;
 
 
@@ -48,13 +49,14 @@ public class StackatoPushPublisher extends Recorder {
 
     @DataBoundConstructor
     public StackatoPushPublisher(String target, String organization, String cloudSpace,
-                                 String username, String password,
+                                 String username, String password, boolean selfSigned,
                                  OptionalManifest optionalManifest) {
         this.target = target;
         this.organization = organization;
         this.cloudSpace = cloudSpace;
         this.username = username;
         this.password = password;
+        this.selfSigned = selfSigned;
         this.optionalManifest = optionalManifest;
     }
 
@@ -95,7 +97,8 @@ public class StackatoPushPublisher extends Recorder {
 
 
             CloudCredentials credentials = new CloudCredentials(username, password);
-            CloudFoundryClient client = new CloudFoundryClient(credentials, targetUrl, organization, cloudSpace);
+            CloudFoundryClient client = new CloudFoundryClient(credentials, targetUrl, organization, cloudSpace,
+                    null, selfSigned);
             client.login();
 
             listener.getLogger().println("Pushing " + appName + " app to " + fullTarget);
@@ -231,7 +234,7 @@ public class StackatoPushPublisher extends Recorder {
             if (e.getCause() instanceof UnknownHostException) {
                 listener.getLogger().println("ERROR: Unknown host: " + e.getMessage());
             } else if (e.getCause() instanceof SSLPeerUnverifiedException) {
-                listener.getLogger().println("ERROR: Certificate is not in Java's keystore: " + e.getMessage());
+                listener.getLogger().println("ERROR: Certificate is not verified: " + e.getMessage());
             } else {
                 listener.getLogger().println("ERROR: Unknown ResourceAccessException: " + e.getMessage());
             }
@@ -350,12 +353,14 @@ public class StackatoPushPublisher extends Recorder {
                                                @QueryParameter("username") final String username,
                                                @QueryParameter("password") final String password,
                                                @QueryParameter("organization") final String organization,
-                                               @QueryParameter("cloudSpace") final String cloudSpace) {
+                                               @QueryParameter("cloudSpace") final String cloudSpace,
+                                               @QueryParameter("selfSigned") final boolean selfSigned) {
 
             try {
                 URL targetUrl = new URL(target);
                 CloudCredentials credentials = new CloudCredentials(username, password);
-                CloudFoundryClient client = new CloudFoundryClient(credentials, targetUrl, organization, cloudSpace);
+                CloudFoundryClient client = new CloudFoundryClient(credentials, targetUrl, organization, cloudSpace,
+                        null, selfSigned);
                 client.login();
                 client.getCloudInfo();
             } catch (MalformedURLException e) {
@@ -364,7 +369,8 @@ public class StackatoPushPublisher extends Recorder {
                 if (e.getCause() instanceof UnknownHostException) {
                     return FormValidation.error("Unknown host");
                 } else if (e.getCause() instanceof SSLPeerUnverifiedException) {
-                    return FormValidation.error("Target's certificate is not in the Java keystore");
+                    return FormValidation.error("Target's certificate is not verified " +
+                            "(Add it to Java's keystore, or check the \"Allow self-signed\" box)");
                 } else {
                     return FormValidation.error(e, "Unknown ResourceAccessException");
                 }
