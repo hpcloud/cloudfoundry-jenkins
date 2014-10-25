@@ -71,8 +71,8 @@ public class StackatoPushPublisher extends Recorder {
 
             URL targetUrl = new URL(target);
 
-            String[] split = target.split("\\.");
-            String domain = split[split.length - 2] + "." + split[split.length - 1];
+            String[] split = target.split("\\.", 2);
+            String domain = split[split.length - 1];
 
             FilePath manifestFilePath = new FilePath(build.getWorkspace(), DEFAULT_MANIFEST_PATH);
             File manifestFile = new File(manifestFilePath.toURI());
