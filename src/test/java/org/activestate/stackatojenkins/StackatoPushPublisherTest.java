@@ -97,7 +97,7 @@ public class StackatoPushPublisherTest {
         project.setScm(new ExtractResourceSCM(getClass().getResource("hello-java.zip")));
         OptionalManifest manifest =
                 new OptionalManifest("hello-java", 512, "", 0, 0, false,
-                        "target/hello-java-1.0.war", "", "", "", 
+                        "target/hello-java-1.0.war", "", "", "",
                         new ArrayList<EnvironmentVariable>(), new ArrayList<ServiceName>());
         StackatoPushPublisher stackato = new StackatoPushPublisher(TEST_TARGET, TEST_ORG, TEST_SPACE,
                 TEST_USERNAME, TEST_PASSWORD, false, manifest);

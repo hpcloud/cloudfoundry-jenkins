@@ -118,8 +118,7 @@ public class DeploymentInfoTest {
     @Test
     public void testReadJenkinsConfigDefaultOptions() throws Exception {
         OptionalManifest jenkinsManifest =
-                new OptionalManifest("", 0, "", 0, 0, false, "", "", "", "",
-                        new ArrayList<EnvironmentVariable>(), new ArrayList<ServiceName>());
+                new OptionalManifest("", 0, "", 0, 0, false, "", "", "", "", null, null);
         DeploymentInfo deploymentInfo =
                 new DeploymentInfo(System.out, null, jenkinsManifest, "jenkins-build-name", "domain-name");
 

@@ -182,13 +182,17 @@ public class DeploymentInfo {
         }
 
         List<EnvironmentVariable> manifestEnvVars = optionalManifest.envVars;
-        for (EnvironmentVariable var : manifestEnvVars) {
-            this.envVars.put(var.key, var.value);
+        if (manifestEnvVars != null) {
+            for (EnvironmentVariable var : manifestEnvVars) {
+                this.envVars.put(var.key, var.value);
+            }
         }
 
         List<ServiceName> manifestServicesNames = optionalManifest.servicesNames;
-        for (ServiceName service : manifestServicesNames) {
-            this.servicesNames.add(service.name);
+        if (manifestServicesNames != null) {
+            for (ServiceName service : manifestServicesNames) {
+                this.servicesNames.add(service.name);
+            }
         }
     }
 
