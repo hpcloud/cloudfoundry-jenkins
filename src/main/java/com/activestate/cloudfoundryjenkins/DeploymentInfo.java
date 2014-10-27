@@ -33,7 +33,6 @@ public class DeploymentInfo {
             // Read manifest.yml
             ManifestReader manifestReader = new ManifestReader(manifestFile);
             Map<String, Object> applicationInfo = manifestReader.getApplicationInfo(null);
-            logger.println(applicationInfo.toString());
             readManifestFile(logger, applicationInfo, jenkinsBuildName, defaultDomain);
         } else {
             // Read Jenkins configuration
