@@ -1,6 +1,4 @@
-package org.activestate.stackatojenkins;
-
-import org.activestate.stackatojenkins.StackatoPushPublisher.*;
+package com.activestate.cloudfoundryjenkins;
 
 import java.io.File;
 import java.io.IOException;
@@ -9,8 +7,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static org.activestate.stackatojenkins.StackatoPushPublisher.DescriptorImpl.*;
 
 
 public class DeploymentInfo {
@@ -29,7 +25,7 @@ public class DeploymentInfo {
     private Map<String, String> envVars = new HashMap<String, String>();
     private List<String> servicesNames = new ArrayList<String>();
 
-    public DeploymentInfo(PrintStream logger, File manifestFile, OptionalManifest optionalManifest,
+    public DeploymentInfo(PrintStream logger, File manifestFile, CloudFoundryPushPublisher.OptionalManifest optionalManifest,
                           String jenkinsBuildName, String defaultDomain)
             throws IOException, ManifestParsingException, InterruptedException {
 
@@ -59,8 +55,8 @@ public class DeploymentInfo {
         int memory = 0;
         String memString = (String) manifestJson.get("memory");
         if (memString == null) {
-            logger.println("WARNING: No manifest value for memory. Using default value: " + DEFAULT_MEMORY);
-            memory = DEFAULT_MEMORY;
+            logger.println("WARNING: No manifest value for memory. Using default value: " + CloudFoundryPushPublisher.DescriptorImpl.DEFAULT_MEMORY);
+            memory = CloudFoundryPushPublisher.DescriptorImpl.DEFAULT_MEMORY;
         } else if (memString.toLowerCase().endsWith("m")) {
             memory = Integer.parseInt(memString.substring(0, memString.length() - 1));
         }
@@ -76,13 +72,13 @@ public class DeploymentInfo {
 
         Integer instances = (Integer) manifestJson.get("instances");
         if (instances == null) {
-            instances = DEFAULT_INSTANCES;
+            instances = CloudFoundryPushPublisher.DescriptorImpl.DEFAULT_INSTANCES;
         }
         this.instances = instances;
 
         Integer timeout = (Integer) manifestJson.get("timeout");
         if (timeout == null) {
-            timeout = DEFAULT_TIMEOUT;
+            timeout = CloudFoundryPushPublisher.DescriptorImpl.DEFAULT_TIMEOUT;
         }
         this.timeout = timeout;
 
@@ -130,7 +126,7 @@ public class DeploymentInfo {
         }
     }
 
-    private void readOptionalJenkinsConfig(PrintStream logger, OptionalManifest optionalManifest,
+    private void readOptionalJenkinsConfig(PrintStream logger, CloudFoundryPushPublisher.OptionalManifest optionalManifest,
                                            String jenkinsBuildName, String defaultDomain) {
 
         this.appName = optionalManifest.appName;
@@ -140,8 +136,8 @@ public class DeploymentInfo {
         }
         this.memory = optionalManifest.memory;
         if (memory == 0) {
-            logger.println("WARNING: Missing value for memory. Using default value: " + DEFAULT_MEMORY);
-            memory = DEFAULT_MEMORY;
+            logger.println("WARNING: Missing value for memory. Using default value: " + CloudFoundryPushPublisher.DescriptorImpl.DEFAULT_MEMORY);
+            memory = CloudFoundryPushPublisher.DescriptorImpl.DEFAULT_MEMORY;
         }
         this.hostname = optionalManifest.hostname;
         if (hostname.equals("")) {
@@ -151,12 +147,12 @@ public class DeploymentInfo {
 
         this.instances = optionalManifest.instances;
         if (instances == 0) {
-            instances = DEFAULT_INSTANCES;
+            instances = CloudFoundryPushPublisher.DescriptorImpl.DEFAULT_INSTANCES;
         }
 
         this.timeout = optionalManifest.timeout;
         if (timeout == 0) {
-            timeout = DEFAULT_TIMEOUT;
+            timeout = CloudFoundryPushPublisher.DescriptorImpl.DEFAULT_TIMEOUT;
         }
 
         // noRoute's default value is already false, which is acceptable
@@ -181,16 +177,16 @@ public class DeploymentInfo {
             appPath = ".";
         }
 
-        List<EnvironmentVariable> manifestEnvVars = optionalManifest.envVars;
+        List<CloudFoundryPushPublisher.EnvironmentVariable> manifestEnvVars = optionalManifest.envVars;
         if (manifestEnvVars != null) {
-            for (EnvironmentVariable var : manifestEnvVars) {
+            for (CloudFoundryPushPublisher.EnvironmentVariable var : manifestEnvVars) {
                 this.envVars.put(var.key, var.value);
             }
         }
 
-        List<ServiceName> manifestServicesNames = optionalManifest.servicesNames;
+        List<CloudFoundryPushPublisher.ServiceName> manifestServicesNames = optionalManifest.servicesNames;
         if (manifestServicesNames != null) {
-            for (ServiceName service : manifestServicesNames) {
+            for (CloudFoundryPushPublisher.ServiceName service : manifestServicesNames) {
                 this.servicesNames.add(service.name);
             }
         }

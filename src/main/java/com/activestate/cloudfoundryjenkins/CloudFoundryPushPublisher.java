@@ -1,4 +1,4 @@
-package org.activestate.stackatojenkins;
+package com.activestate.cloudfoundryjenkins;
 
 import hudson.Extension;
 import hudson.FilePath;
@@ -31,7 +31,7 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class StackatoPushPublisher extends Recorder {
+public class CloudFoundryPushPublisher extends Recorder {
 
     private static final String DEFAULT_MANIFEST_PATH = "manifest.yml";
     private static final int TIMEOUT = 120;
@@ -48,9 +48,9 @@ public class StackatoPushPublisher extends Recorder {
     private String appURI;
 
     @DataBoundConstructor
-    public StackatoPushPublisher(String target, String organization, String cloudSpace,
-                                 String username, String password, boolean selfSigned,
-                                 OptionalManifest optionalManifest) {
+    public CloudFoundryPushPublisher(String target, String organization, String cloudSpace,
+                                     String username, String password, boolean selfSigned,
+                                     OptionalManifest optionalManifest) {
         this.target = target;
         this.organization = organization;
         this.cloudSpace = cloudSpace;
@@ -205,11 +205,11 @@ public class StackatoPushPublisher extends Recorder {
                 } else {
                     listener.getLogger().println("Application is now running at " + getAppURI());
                 }
-                listener.getLogger().println("Stackato push successful.");
+                listener.getLogger().println("Cloud Foundry push successful.");
                 return true;
             } else {
                 listener.getLogger().println("ERROR: The application failed to start after " + TIMEOUT + " seconds.");
-                listener.getLogger().println("Stackato push failed.");
+                listener.getLogger().println("Cloud Foundry push failed.");
                 return false;
             }
 
@@ -331,7 +331,7 @@ public class StackatoPushPublisher extends Recorder {
 
         @Override
         public String getDisplayName() {
-            return "Push to Stackato";
+            return "Push to Cloud Foundry";
         }
 
         @SuppressWarnings("unused")
@@ -368,7 +368,7 @@ public class StackatoPushPublisher extends Recorder {
                 } else {
                     return FormValidation.error(e, "Unknown CloudFoundryException");
                 }
-            }catch (IllegalArgumentException e) {
+            } catch (IllegalArgumentException e) {
                 if (e.getMessage().contains("No matching organization and space found")) {
                     return FormValidation.error("Could not find Organization or Space");
                 } else {

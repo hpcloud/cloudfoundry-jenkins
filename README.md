@@ -1,7 +1,7 @@
-Stackato Jenkins plugin
+Cloud Foundry Jenkins plugin
 =======================
 
-This is a prototype that can push simple apps to Stackato at the end of a Jenkins build.
+This is a prototype that can push simple apps to a Cloud Foundry platform at the end of a Jenkins build.
 
 Installing:
 -----------

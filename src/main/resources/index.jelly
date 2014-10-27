@@ -2,5 +2,5 @@
   This view is used to render the installed plugins page.
 -->
 <div>
-  Push an application to Stackato as a post-build step.
+  Push an application to a Cloud Foundry platform as a post-build step.
 </div>

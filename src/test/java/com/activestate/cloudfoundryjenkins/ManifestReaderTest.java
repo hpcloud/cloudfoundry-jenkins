@@ -1,4 +1,4 @@
-package org.activestate.stackatojenkins;
+package com.activestate.cloudfoundryjenkins;
 
 import org.junit.Rule;
 import org.junit.Test;

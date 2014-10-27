@@ -1,4 +1,4 @@
-package org.activestate.stackatojenkins;
+package com.activestate.cloudfoundryjenkins;
 
 import hudson.model.BuildListener;
 import org.cloudfoundry.client.lib.ApplicationLogListener;

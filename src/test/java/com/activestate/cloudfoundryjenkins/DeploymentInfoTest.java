@@ -1,8 +1,8 @@
-package org.activestate.stackatojenkins;
+package com.activestate.cloudfoundryjenkins;
 
-import org.activestate.stackatojenkins.StackatoPushPublisher.EnvironmentVariable;
-import org.activestate.stackatojenkins.StackatoPushPublisher.OptionalManifest;
-import org.activestate.stackatojenkins.StackatoPushPublisher.ServiceName;
+import com.activestate.cloudfoundryjenkins.CloudFoundryPushPublisher.EnvironmentVariable;
+import com.activestate.cloudfoundryjenkins.CloudFoundryPushPublisher.OptionalManifest;
+import com.activestate.cloudfoundryjenkins.CloudFoundryPushPublisher.ServiceName;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -13,8 +13,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.activestate.cloudfoundryjenkins.CloudFoundryPushPublisher.DescriptorImpl.*;
 import static org.junit.Assert.*;
-import static org.activestate.stackatojenkins.StackatoPushPublisher.DescriptorImpl.*;
 
 public class DeploymentInfoTest {
 

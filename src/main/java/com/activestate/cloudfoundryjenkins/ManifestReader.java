@@ -1,4 +1,4 @@
-package org.activestate.stackatojenkins;
+package com.activestate.cloudfoundryjenkins;
 
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.scanner.ScannerException;

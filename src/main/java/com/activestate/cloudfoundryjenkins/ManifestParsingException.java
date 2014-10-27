@@ -1,4 +1,4 @@
-package org.activestate.stackatojenkins;
+package com.activestate.cloudfoundryjenkins;
 
 public class ManifestParsingException extends Exception {
 

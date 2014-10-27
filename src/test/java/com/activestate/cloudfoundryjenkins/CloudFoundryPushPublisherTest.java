@@ -1,11 +1,11 @@
-package org.activestate.stackatojenkins;
+package com.activestate.cloudfoundryjenkins;
 
+import com.activestate.cloudfoundryjenkins.CloudFoundryPushPublisher.EnvironmentVariable;
+import com.activestate.cloudfoundryjenkins.CloudFoundryPushPublisher.OptionalManifest;
+import com.activestate.cloudfoundryjenkins.CloudFoundryPushPublisher.ServiceName;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Result;
-import org.activestate.stackatojenkins.StackatoPushPublisher.EnvironmentVariable;
-import org.activestate.stackatojenkins.StackatoPushPublisher.OptionalManifest;
-import org.activestate.stackatojenkins.StackatoPushPublisher.ServiceName;
 import org.apache.commons.io.FileUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.fluent.Request;
@@ -19,6 +19,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.ExtractResourceSCM;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.recipes.WithTimeout;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -27,7 +28,7 @@ import java.util.ArrayList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class StackatoPushPublisherTest {
+public class CloudFoundryPushPublisherTest {
 
     private static final String TEST_TARGET = System.getProperty("target");
     private static final String TEST_USERNAME = System.getProperty("username");
@@ -68,9 +69,9 @@ public class StackatoPushPublisherTest {
     public void testPerformSimplePushManifestFile() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
         project.setScm(new ExtractResourceSCM(getClass().getResource("hello-java.zip")));
-        StackatoPushPublisher stackato = new StackatoPushPublisher(TEST_TARGET, TEST_ORG, TEST_SPACE,
+        CloudFoundryPushPublisher cf = new CloudFoundryPushPublisher(TEST_TARGET, TEST_ORG, TEST_SPACE,
                 TEST_USERNAME, TEST_PASSWORD, false, null);
-        project.getPublishersList().add(stackato);
+        project.getPublishersList().add(cf);
         FreeStyleBuild build = project.scheduleBuild2(0).get();
         System.out.println(build.getDisplayName() + " completed");
 
@@ -80,8 +81,8 @@ public class StackatoPushPublisherTest {
         assertTrue("Build did not succeed", build.getResult().isBetterOrEqualTo(Result.SUCCESS));
         assertTrue("Build did not display staging logs", log.contains("Downloaded app package"));
 
-        System.out.println("stackato.getAppURI() = " + stackato.getAppURI());
-        String uri = stackato.getAppURI();
+        System.out.println("cf.getAppURI() = " + cf.getAppURI());
+        String uri = cf.getAppURI();
         Request request = Request.Get(uri);
         HttpResponse response = request.execute().returnResponse();
         int statusCode = response.getStatusLine().getStatusCode();
@@ -99,9 +100,9 @@ public class StackatoPushPublisherTest {
                 new OptionalManifest("hello-java", 512, "", 0, 0, false,
                         "target/hello-java-1.0.war", "", "", "",
                         new ArrayList<EnvironmentVariable>(), new ArrayList<ServiceName>());
-        StackatoPushPublisher stackato = new StackatoPushPublisher(TEST_TARGET, TEST_ORG, TEST_SPACE,
+        CloudFoundryPushPublisher cf = new CloudFoundryPushPublisher(TEST_TARGET, TEST_ORG, TEST_SPACE,
                 TEST_USERNAME, TEST_PASSWORD, false, manifest);
-        project.getPublishersList().add(stackato);
+        project.getPublishersList().add(cf);
         FreeStyleBuild build = project.scheduleBuild2(0).get();
         System.out.println(build.getDisplayName() + " completed");
 
@@ -111,8 +112,8 @@ public class StackatoPushPublisherTest {
         assertTrue("Build did not succeed", build.getResult().isBetterOrEqualTo(Result.SUCCESS));
         assertTrue("Build did not display staging logs", log.contains("Downloaded app package"));
 
-        System.out.println("stackato.getAppURI() = " + stackato.getAppURI());
-        String uri = stackato.getAppURI();
+        System.out.println("cf.getAppURI() = " + cf.getAppURI());
+        String uri = cf.getAppURI();
         Request request = Request.Get(uri);
         HttpResponse response = request.execute().returnResponse();
         int statusCode = response.getStatusLine().getStatusCode();
@@ -130,9 +131,9 @@ public class StackatoPushPublisherTest {
                 new OptionalManifest("hello-java", 64, "", 4, 0, false,
                         "target/hello-java-1.0.war", "", "", "",
                         new ArrayList<EnvironmentVariable>(), new ArrayList<ServiceName>());
-        StackatoPushPublisher stackato = new StackatoPushPublisher(TEST_TARGET, TEST_ORG, TEST_SPACE,
-                        TEST_USERNAME, TEST_PASSWORD, false, manifest);
-        project.getPublishersList().add(stackato);
+        CloudFoundryPushPublisher cf = new CloudFoundryPushPublisher(TEST_TARGET, TEST_ORG, TEST_SPACE,
+                TEST_USERNAME, TEST_PASSWORD, false, manifest);
+        project.getPublishersList().add(cf);
         FreeStyleBuild build = project.scheduleBuild2(0).get();
         System.out.println(build.getDisplayName() + " completed");
 
@@ -143,8 +144,8 @@ public class StackatoPushPublisherTest {
         assertTrue("Build did not display staging logs", log.contains("Downloaded app package"));
         assertTrue("Not the correct amount of instances", log.contains("4 instances running out of 4"));
 
-        System.out.println("stackato.getAppURI() = " + stackato.getAppURI());
-        String uri = stackato.getAppURI();
+        System.out.println("cf.getAppURI() = " + cf.getAppURI());
+        String uri = cf.getAppURI();
         Request request = Request.Get(uri);
         HttpResponse response = request.execute().returnResponse();
         int statusCode = response.getStatusLine().getStatusCode();
@@ -162,9 +163,9 @@ public class StackatoPushPublisherTest {
                 new OptionalManifest("heroku-node-js-sample", 512, "", 1, 60, false, "",
                         "https://github.com/heroku/heroku-buildpack-nodejs", "", "",
                         new ArrayList<EnvironmentVariable>(), new ArrayList<ServiceName>());
-        StackatoPushPublisher stackato = new StackatoPushPublisher(TEST_TARGET, TEST_ORG, TEST_SPACE,
-                        TEST_USERNAME, TEST_PASSWORD, false, manifest);
-        project.getPublishersList().add(stackato);
+        CloudFoundryPushPublisher cf = new CloudFoundryPushPublisher(TEST_TARGET, TEST_ORG, TEST_SPACE,
+                TEST_USERNAME, TEST_PASSWORD, false, manifest);
+        project.getPublishersList().add(cf);
         FreeStyleBuild build = project.scheduleBuild2(0).get();
         System.out.println(build.getDisplayName() + " completed");
 
@@ -174,8 +175,8 @@ public class StackatoPushPublisherTest {
         assertTrue("Build did not succeed", build.getResult().isBetterOrEqualTo(Result.SUCCESS));
         assertTrue("Build did not display staging logs", log.contains("Downloading and installing node"));
 
-        System.out.println("stackato.getAppURI() = " + stackato.getAppURI());
-        String uri = stackato.getAppURI();
+        System.out.println("cf.getAppURI() = " + cf.getAppURI());
+        String uri = cf.getAppURI();
         Request request = Request.Get(uri);
         HttpResponse response = request.execute().returnResponse();
         int statusCode = response.getStatusLine().getStatusCode();
@@ -186,16 +187,18 @@ public class StackatoPushPublisherTest {
     }
 
     @Test
+    @WithTimeout(300)
     public void testPerformCustomTimeout() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
+
         project.setScm(new ExtractResourceSCM(getClass().getResource("hello-java.zip")));
         OptionalManifest manifest =
                 new OptionalManifest("hello-java", 512, "", 0, 1, false,
                         "target/hello-java-1.0.war", "", "", "",
                         new ArrayList<EnvironmentVariable>(), new ArrayList<ServiceName>());
-        StackatoPushPublisher stackato = new StackatoPushPublisher(TEST_TARGET, TEST_ORG, TEST_SPACE,
+        CloudFoundryPushPublisher cf = new CloudFoundryPushPublisher(TEST_TARGET, TEST_ORG, TEST_SPACE,
                 TEST_USERNAME, TEST_PASSWORD, false, manifest);
-        project.getPublishersList().add(stackato);
+        project.getPublishersList().add(cf);
         FreeStyleBuild build = project.scheduleBuild2(0).get();
         System.out.println(build.getDisplayName() + " completed");
 
@@ -212,9 +215,9 @@ public class StackatoPushPublisherTest {
     public void testPerformEnvVarsManifestFile() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
         project.setScm(new ExtractResourceSCM(getClass().getResource("python-env.zip")));
-        StackatoPushPublisher stackato = new StackatoPushPublisher(TEST_TARGET, TEST_ORG, TEST_SPACE,
+        CloudFoundryPushPublisher cf = new CloudFoundryPushPublisher(TEST_TARGET, TEST_ORG, TEST_SPACE,
                 TEST_USERNAME, TEST_PASSWORD, false, null);
-        project.getPublishersList().add(stackato);
+        project.getPublishersList().add(cf);
         FreeStyleBuild build = project.scheduleBuild2(0).get();
         System.out.println(build.getDisplayName() + " completed");
 
@@ -224,8 +227,8 @@ public class StackatoPushPublisherTest {
         assertTrue("Build did not succeed", build.getResult().isBetterOrEqualTo(Result.SUCCESS));
         assertTrue("Build did not display staging logs", log.contains("Downloaded app package"));
 
-        System.out.println("stackato.getAppURI() = " + stackato.getAppURI());
-        String uri = stackato.getAppURI();
+        System.out.println("cf.getAppURI() = " + cf.getAppURI());
+        String uri = cf.getAppURI();
         Request request = Request.Get(uri);
         HttpResponse response = request.execute().returnResponse();
         int statusCode = response.getStatusLine().getStatusCode();
@@ -253,9 +256,9 @@ public class StackatoPushPublisherTest {
 
         FreeStyleProject project = j.createFreeStyleProject();
         project.setScm(new ExtractResourceSCM(getClass().getResource("python-env-services.zip")));
-        StackatoPushPublisher stackato = new StackatoPushPublisher(TEST_TARGET, TEST_ORG, TEST_SPACE,
-                TEST_USERNAME, TEST_PASSWORD, false , null);
-        project.getPublishersList().add(stackato);
+        CloudFoundryPushPublisher cf = new CloudFoundryPushPublisher(TEST_TARGET, TEST_ORG, TEST_SPACE,
+                TEST_USERNAME, TEST_PASSWORD, false, null);
+        project.getPublishersList().add(cf);
         FreeStyleBuild build = project.scheduleBuild2(0).get();
         System.out.println(build.getDisplayName() + " completed");
 
@@ -265,8 +268,8 @@ public class StackatoPushPublisherTest {
         assertTrue("Build did not succeed", build.getResult().isBetterOrEqualTo(Result.SUCCESS));
         assertTrue("Build did not display staging logs", log.contains("Downloaded app package"));
 
-        System.out.println("stackato.getAppURI() = " + stackato.getAppURI());
-        String uri = stackato.getAppURI();
+        System.out.println("cf.getAppURI() = " + cf.getAppURI());
+        String uri = cf.getAppURI();
         Request request = Request.Get(uri);
         HttpResponse response = request.execute().returnResponse();
         int statusCode = response.getStatusLine().getStatusCode();
@@ -285,9 +288,9 @@ public class StackatoPushPublisherTest {
                 new OptionalManifest("hello-java", 512, "", 0, 0, true,
                         "target/hello-java-1.0.war", "", "", "",
                         new ArrayList<EnvironmentVariable>(), new ArrayList<ServiceName>());
-        StackatoPushPublisher stackato = new StackatoPushPublisher(TEST_TARGET, TEST_ORG, TEST_SPACE,
+        CloudFoundryPushPublisher cf = new CloudFoundryPushPublisher(TEST_TARGET, TEST_ORG, TEST_SPACE,
                 TEST_USERNAME, TEST_PASSWORD, false, manifest);
-        project.getPublishersList().add(stackato);
+        project.getPublishersList().add(cf);
         FreeStyleBuild build = project.scheduleBuild2(0).get();
         System.out.println(build.getDisplayName() + " completed");
 
@@ -297,8 +300,8 @@ public class StackatoPushPublisherTest {
         assertTrue("Build did not succeed", build.getResult().isBetterOrEqualTo(Result.SUCCESS));
         assertTrue("Build did not display staging logs", log.contains("Downloaded app package"));
 
-        System.out.println("stackato.getAppURI() = " + stackato.getAppURI());
-        String uri = stackato.getAppURI();
+        System.out.println("cf.getAppURI() = " + cf.getAppURI());
+        String uri = cf.getAppURI();
         Request request = Request.Get(uri);
         HttpResponse response = request.execute().returnResponse();
         int statusCode = response.getStatusLine().getStatusCode();
@@ -309,9 +312,9 @@ public class StackatoPushPublisherTest {
     public void testPerformUnknownHost() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
         project.setScm(new ExtractResourceSCM(getClass().getResource("hello-java.zip")));
-        StackatoPushPublisher stackato = new StackatoPushPublisher("https://does-not-exist.local", TEST_ORG, TEST_SPACE,
+        CloudFoundryPushPublisher cf = new CloudFoundryPushPublisher("https://does-not-exist.local", TEST_ORG, TEST_SPACE,
                 TEST_USERNAME, TEST_PASSWORD, false, null);
-        project.getPublishersList().add(stackato);
+        project.getPublishersList().add(cf);
         FreeStyleBuild build = project.scheduleBuild2(0).get();
         System.out.println(build.getDisplayName() + " completed");
 
@@ -326,9 +329,9 @@ public class StackatoPushPublisherTest {
     public void testPerformWrongCredentials() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
         project.setScm(new ExtractResourceSCM(getClass().getResource("hello-java.zip")));
-        StackatoPushPublisher stackato = new StackatoPushPublisher(TEST_TARGET, TEST_ORG, TEST_SPACE,
+        CloudFoundryPushPublisher cf = new CloudFoundryPushPublisher(TEST_TARGET, TEST_ORG, TEST_SPACE,
                 "NotAdmin", "BadPassword", false, null);
-        project.getPublishersList().add(stackato);
+        project.getPublishersList().add(cf);
         FreeStyleBuild build = project.scheduleBuild2(0).get();
         System.out.println(build.getDisplayName() + " completed");
 
