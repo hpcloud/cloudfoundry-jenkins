@@ -13,7 +13,7 @@ In order to avoid the use of a `mvn install-file` command on every new machine, 
 Maven repository in the `lib` subfolder, with the shaded library already installed. This allows building the plugin in 
 a single `mvn install` command.
 
-The command to install to the local Maven repository is:
+The command that was used to install the library to the local Maven repository is:
 
 ```
 mvn org.apache.maven.plugins:maven-install-plugin:2.5.1:install-file \
@@ -47,8 +47,10 @@ mvn clean install
 ```
 
 By default, the integration tests are skipped. If you have a working Cloud Foundry platform and want to run the tests 
-before building, you will need to specify some arguments for the tests:
+before building, you will need to specify some arguments in your Maven command:
 
 ```
-mvn install -PallTests -Dtarget=<target URL> -Dusername=<username> -Dpassword=<password> -Dorg=<org> -Dspace=<space>
+mvn test -Dtarget=<target URL> -Dusername=<username> -Dpassword=<password> -Dorg=<org> -Dspace=<space>
 ```
+
+The tests will remove all existing applications and services in that space.

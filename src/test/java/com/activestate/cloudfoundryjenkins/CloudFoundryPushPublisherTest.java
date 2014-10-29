@@ -27,6 +27,7 @@ import java.util.ArrayList;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeNotNull;
 
 public class CloudFoundryPushPublisherTest {
 
@@ -44,6 +45,9 @@ public class CloudFoundryPushPublisherTest {
 
     @BeforeClass
     public static void initialiseClient() throws MalformedURLException {
+        // Skip all tests of this class if no test CF platform is specified
+        assumeNotNull(TEST_TARGET);
+
         String fullTarget = TEST_TARGET;
         if (!fullTarget.startsWith("https://")) {
             if (!fullTarget.startsWith("api.")) {
