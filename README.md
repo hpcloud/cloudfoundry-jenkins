@@ -7,11 +7,18 @@ configuration of a manifest.yml file, or write your settings in the Jenkins buil
 Installing:
 -----------
 Due to conflicts between the versions of Spring used by Jenkins and the CF Java client, this plugin uses a modified 
-version of the CF Java client with shaded libraries.  
-The jar file is included in the `lib` subfolder. To install it to your local Maven repository, run:
+version of the CF Java client with shaded libraries. 
+
+In order to avoid the use of a `mvn install-file` command on every new machine, this git repository contains a local 
+Maven repository in the `lib` subfolder, with the shaded library already installed. This allows building the plugin in 
+a single `mvn install` command.
+
+The command to install to the local Maven repository is:
 
 ```
-mvn org.apache.maven.plugins:maven-install-plugin:2.5.1:install-file -Dfile=lib/cloudfoundry-client-lib-shaded-1.0.3.jar
+mvn org.apache.maven.plugins:maven-install-plugin:2.5.1:install-file \
+-Dfile=lib/cloudfoundry-client-lib-shaded-1.0.3.jar \
+-DlocalRepositoryPath=lib
 ```
 
 Debugging:
