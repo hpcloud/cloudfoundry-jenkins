@@ -58,7 +58,7 @@
       </f:repeatable>
     </f:entry>
 
-    <f:entry title="Services" help="${resURL}/help-servicesNames.jelly">
+    <f:entry title="Services">
       <f:repeatable var="services" items="${instance.optionalManifest.services}">
         <table width="100%">
           <f:entry title="Name" field="name">

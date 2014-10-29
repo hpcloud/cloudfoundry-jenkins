@@ -17,7 +17,7 @@
   </parent>
 
   <groupId>com.activestate</groupId>
-  <artifactId>cloudfoundry-jenkins</artifactId>
+  <artifactId>cloudfoundry-plugin</artifactId>
   <version>1.0-SNAPSHOT</version>
   <packaging>hpi</packaging>
   <name>Cloud Foundry Plugin</name>
