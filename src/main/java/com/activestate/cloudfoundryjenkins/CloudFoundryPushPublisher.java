@@ -353,6 +353,14 @@ public class CloudFoundryPushPublisher extends Recorder {
                         null, selfSigned);
                 client.login();
                 client.getCloudInfo();
+                if (targetUrl.getHost().startsWith("api.")) {
+                    return FormValidation.okWithMarkup("<b>Connection successful!</b>");
+                } else {
+                    return FormValidation.warning(
+                            "Connection successful, but your target's hostname does not start with \"api.\".\n" +
+                            "Make sure it is the real API endpoint and not a redirection, " +
+                            "or it may cause some problems.");
+                }
             } catch (MalformedURLException e) {
                 return FormValidation.error("Malformed target URL");
             } catch (ResourceAccessException e) {
@@ -366,7 +374,7 @@ public class CloudFoundryPushPublisher extends Recorder {
                 }
             } catch (CloudFoundryException e) {
                 if (e.getMessage().equals("404 Not Found")) {
-                    return FormValidation.error("Could not find CF API info (Did you forget to add 'api.'?)");
+                    return FormValidation.error("Could not find CF API info (Did you forget to add \"api.\"?)");
                 } else if (e.getMessage().equals("403 Access token denied.")) {
                     return FormValidation.error("Wrong username or password");
                 } else {
@@ -382,7 +390,7 @@ public class CloudFoundryPushPublisher extends Recorder {
                 return FormValidation.error(e, "Unknown Exception");
             }
 
-            return FormValidation.okWithMarkup("<b>Connection successful!</b>");
+
         }
 
         @SuppressWarnings("unused")
