@@ -22,6 +22,33 @@
   <packaging>hpi</packaging>
   <name>Cloud Foundry Plugin</name>
 
+  <properties>
+    <test.excludes>**/CloudFoundryPushPublisherTest.java</test.excludes>
+  </properties>
+  <profiles>
+    <profile>
+      <id>allTests</id>
+      <properties>
+        <test.excludes>""</test.excludes>
+      </properties>
+    </profile>
+  </profiles>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>2.17</version>
+        <configuration>
+          <excludes>
+            <exclude>${test.excludes}</exclude>
+          </excludes>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
   <dependencies>
     <dependency>
       <groupId>org.cloudfoundry</groupId>

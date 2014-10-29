@@ -43,12 +43,12 @@ If you already have a working Jenkins instance, use this command to create an .h
 Jenkins instance.
 
 ```
-mvn install -Dmaven.test.skip=true
+mvn clean install
 ```
 
-If you have a working Cloud Foundry platform and want to run the tests before building, you will need to specify some 
-arguments for the tests:
+By default, the integration tests are skipped. If you have a working Cloud Foundry platform and want to run the tests 
+before building, you will need to specify some arguments for the tests:
 
 ```
-mvn install -Dtarget=<target URL> -Dusername=<username> -Dpassword=<password> -Dorg=<org> -Dspace=<space>
+mvn install -PallTests -Dtarget=<target URL> -Dusername=<username> -Dpassword=<password> -Dorg=<org> -Dspace=<space>
 ```
