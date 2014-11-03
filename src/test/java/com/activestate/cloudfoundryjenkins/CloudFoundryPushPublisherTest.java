@@ -78,7 +78,7 @@ public class CloudFoundryPushPublisherTest {
         FreeStyleProject project = j.createFreeStyleProject();
         project.setScm(new ExtractResourceSCM(getClass().getResource("hello-java.zip")));
         CloudFoundryPushPublisher cf = new CloudFoundryPushPublisher(TEST_TARGET, TEST_ORG, TEST_SPACE,
-                TEST_USERNAME, TEST_PASSWORD, false, null);
+                TEST_USERNAME, TEST_PASSWORD, false, false, null);
         project.getPublishersList().add(cf);
         FreeStyleBuild build = project.scheduleBuild2(0).get();
         System.out.println(build.getDisplayName() + " completed");
@@ -109,7 +109,7 @@ public class CloudFoundryPushPublisherTest {
                         "target/hello-java-1.0.war", "", "", "",
                         new ArrayList<EnvironmentVariable>(), new ArrayList<ServiceName>());
         CloudFoundryPushPublisher cf = new CloudFoundryPushPublisher(TEST_TARGET, TEST_ORG, TEST_SPACE,
-                TEST_USERNAME, TEST_PASSWORD, false, manifest);
+                TEST_USERNAME, TEST_PASSWORD, false, false, manifest);
         project.getPublishersList().add(cf);
         FreeStyleBuild build = project.scheduleBuild2(0).get();
         System.out.println(build.getDisplayName() + " completed");
@@ -132,6 +132,47 @@ public class CloudFoundryPushPublisherTest {
     }
 
     @Test
+    @WithTimeout(300)
+    public void testPerformResetIfExists() throws Exception {
+        FreeStyleProject project = j.createFreeStyleProject();
+        project.setScm(new ExtractResourceSCM(getClass().getResource("hello-java.zip")));
+        OptionalManifest manifest1 =
+                new OptionalManifest("hello-java", 512, "", 0, 0, false,
+                        "target/hello-java-1.0.war", "", "", "",
+                        new ArrayList<EnvironmentVariable>(), new ArrayList<ServiceName>());
+        CloudFoundryPushPublisher cf1 = new CloudFoundryPushPublisher(TEST_TARGET, TEST_ORG, TEST_SPACE,
+                TEST_USERNAME, TEST_PASSWORD, false, true, manifest1);
+        project.getPublishersList().add(cf1);
+        FreeStyleBuild build = project.scheduleBuild2(0).get();
+        System.out.println(build.getDisplayName() + " 1 completed");
+
+        String log = FileUtils.readFileToString(build.getLogFile());
+        System.out.println(log);
+
+        assertTrue("Build 1 did not succeed", build.getResult().isBetterOrEqualTo(Result.SUCCESS));
+        assertTrue("Build 1 did not display staging logs", log.contains("Downloaded app package"));
+        assertEquals(512, client.getApplication("hello-java").getMemory());
+
+        project.getPublishersList().remove(cf1);
+
+        OptionalManifest manifest2 =
+                new OptionalManifest("hello-java", 256, "", 0, 0, false,
+                        "target/hello-java-1.0.war", "", "", "",
+                        new ArrayList<EnvironmentVariable>(), new ArrayList<ServiceName>());
+        CloudFoundryPushPublisher cf2 = new CloudFoundryPushPublisher(TEST_TARGET, TEST_ORG, TEST_SPACE,
+                TEST_USERNAME, TEST_PASSWORD, false, true, manifest2);
+        project.getPublishersList().add(cf2);
+        build = project.scheduleBuild2(0).get();
+
+        log = FileUtils.readFileToString(build.getLogFile());
+        System.out.println(log);
+
+        assertTrue("Build 2 did not succeed", build.getResult().isBetterOrEqualTo(Result.SUCCESS));
+        assertTrue("Build 2 did not display staging logs", log.contains("Downloaded app package"));
+        assertEquals(256, client.getApplication("hello-java").getMemory());
+    }
+
+    @Test
     public void testPerformMultipleInstances() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
         project.setScm(new ExtractResourceSCM(getClass().getResource("hello-java.zip")));
@@ -140,7 +181,7 @@ public class CloudFoundryPushPublisherTest {
                         "target/hello-java-1.0.war", "", "", "",
                         new ArrayList<EnvironmentVariable>(), new ArrayList<ServiceName>());
         CloudFoundryPushPublisher cf = new CloudFoundryPushPublisher(TEST_TARGET, TEST_ORG, TEST_SPACE,
-                TEST_USERNAME, TEST_PASSWORD, false, manifest);
+                TEST_USERNAME, TEST_PASSWORD, false, false, manifest);
         project.getPublishersList().add(cf);
         FreeStyleBuild build = project.scheduleBuild2(0).get();
         System.out.println(build.getDisplayName() + " completed");
@@ -172,7 +213,7 @@ public class CloudFoundryPushPublisherTest {
                         "https://github.com/heroku/heroku-buildpack-nodejs", "", "",
                         new ArrayList<EnvironmentVariable>(), new ArrayList<ServiceName>());
         CloudFoundryPushPublisher cf = new CloudFoundryPushPublisher(TEST_TARGET, TEST_ORG, TEST_SPACE,
-                TEST_USERNAME, TEST_PASSWORD, false, manifest);
+                TEST_USERNAME, TEST_PASSWORD, false, false, manifest);
         project.getPublishersList().add(cf);
         FreeStyleBuild build = project.scheduleBuild2(0).get();
         System.out.println(build.getDisplayName() + " completed");
@@ -205,7 +246,7 @@ public class CloudFoundryPushPublisherTest {
                         "target/hello-java-1.0.war", "", "", "",
                         new ArrayList<EnvironmentVariable>(), new ArrayList<ServiceName>());
         CloudFoundryPushPublisher cf = new CloudFoundryPushPublisher(TEST_TARGET, TEST_ORG, TEST_SPACE,
-                TEST_USERNAME, TEST_PASSWORD, false, manifest);
+                TEST_USERNAME, TEST_PASSWORD, false, false, manifest);
         project.getPublishersList().add(cf);
         FreeStyleBuild build = project.scheduleBuild2(0).get();
         System.out.println(build.getDisplayName() + " completed");
@@ -224,7 +265,7 @@ public class CloudFoundryPushPublisherTest {
         FreeStyleProject project = j.createFreeStyleProject();
         project.setScm(new ExtractResourceSCM(getClass().getResource("python-env.zip")));
         CloudFoundryPushPublisher cf = new CloudFoundryPushPublisher(TEST_TARGET, TEST_ORG, TEST_SPACE,
-                TEST_USERNAME, TEST_PASSWORD, false, null);
+                TEST_USERNAME, TEST_PASSWORD, false, false, null);
         project.getPublishersList().add(cf);
         FreeStyleBuild build = project.scheduleBuild2(0).get();
         System.out.println(build.getDisplayName() + " completed");
@@ -265,7 +306,7 @@ public class CloudFoundryPushPublisherTest {
         FreeStyleProject project = j.createFreeStyleProject();
         project.setScm(new ExtractResourceSCM(getClass().getResource("python-env-services.zip")));
         CloudFoundryPushPublisher cf = new CloudFoundryPushPublisher(TEST_TARGET, TEST_ORG, TEST_SPACE,
-                TEST_USERNAME, TEST_PASSWORD, false, null);
+                TEST_USERNAME, TEST_PASSWORD, false, false, null);
         project.getPublishersList().add(cf);
         FreeStyleBuild build = project.scheduleBuild2(0).get();
         System.out.println(build.getDisplayName() + " completed");
@@ -297,7 +338,7 @@ public class CloudFoundryPushPublisherTest {
                         "target/hello-java-1.0.war", "", "", "",
                         new ArrayList<EnvironmentVariable>(), new ArrayList<ServiceName>());
         CloudFoundryPushPublisher cf = new CloudFoundryPushPublisher(TEST_TARGET, TEST_ORG, TEST_SPACE,
-                TEST_USERNAME, TEST_PASSWORD, false, manifest);
+                TEST_USERNAME, TEST_PASSWORD, false, false, manifest);
         project.getPublishersList().add(cf);
         FreeStyleBuild build = project.scheduleBuild2(0).get();
         System.out.println(build.getDisplayName() + " completed");
@@ -321,7 +362,7 @@ public class CloudFoundryPushPublisherTest {
         FreeStyleProject project = j.createFreeStyleProject();
         project.setScm(new ExtractResourceSCM(getClass().getResource("hello-java.zip")));
         CloudFoundryPushPublisher cf = new CloudFoundryPushPublisher("https://does-not-exist.local", TEST_ORG, TEST_SPACE,
-                TEST_USERNAME, TEST_PASSWORD, false, null);
+                TEST_USERNAME, TEST_PASSWORD, false, false, null);
         project.getPublishersList().add(cf);
         FreeStyleBuild build = project.scheduleBuild2(0).get();
         System.out.println(build.getDisplayName() + " completed");
@@ -338,7 +379,7 @@ public class CloudFoundryPushPublisherTest {
         FreeStyleProject project = j.createFreeStyleProject();
         project.setScm(new ExtractResourceSCM(getClass().getResource("hello-java.zip")));
         CloudFoundryPushPublisher cf = new CloudFoundryPushPublisher(TEST_TARGET, TEST_ORG, TEST_SPACE,
-                "NotAdmin", "BadPassword", false, null);
+                "NotAdmin", "BadPassword", false, false, null);
         project.getPublishersList().add(cf);
         FreeStyleBuild build = project.scheduleBuild2(0).get();
         System.out.println(build.getDisplayName() + " completed");

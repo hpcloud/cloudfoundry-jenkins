@@ -46,6 +46,7 @@ public class CloudFoundryPushPublisher extends Recorder {
     public final String username;
     public final String password;
     public final boolean selfSigned;
+    public final boolean resetIfExists;
     public final OptionalManifest optionalManifest;
 
 
@@ -54,13 +55,14 @@ public class CloudFoundryPushPublisher extends Recorder {
     @DataBoundConstructor
     public CloudFoundryPushPublisher(String target, String organization, String cloudSpace,
                                      String username, String password, boolean selfSigned,
-                                     OptionalManifest optionalManifest) {
+                                     boolean resetIfExists, OptionalManifest optionalManifest) {
         this.target = target;
         this.organization = organization;
         this.cloudSpace = cloudSpace;
         this.username = username;
         this.password = password;
         this.selfSigned = selfSigned;
+        this.resetIfExists = resetIfExists;
         this.optionalManifest = optionalManifest;
     }
 
@@ -94,11 +96,17 @@ public class CloudFoundryPushPublisher extends Recorder {
 
             // Check if app already exists
             List<CloudApplication> existingApps = client.getApplications();
-            boolean alreadyExists = false;
+            boolean createNewApp = true;
             for (CloudApplication app : existingApps) {
                 if (app.getName().equals(appName)) {
-                    alreadyExists = true;
-                    listener.getLogger().println("App already exists, skipping creation.");
+                    if (resetIfExists) {
+                        listener.getLogger().println("App already exists, resetting.");
+                        client.deleteApplication(appName);
+                        listener.getLogger().println("App deleted.");
+                    } else {
+                        createNewApp = false;
+                        listener.getLogger().println("App already exists, skipping creation.");
+                    }
                     break;
                 }
             }
@@ -108,7 +116,7 @@ public class CloudFoundryPushPublisher extends Recorder {
             // client.createService();
 
             // Create app if it doesn't exist
-            if (!alreadyExists) {
+            if (createNewApp) {
                 listener.getLogger().println("Creating new app.");
                 Staging staging = new Staging(deploymentInfo.getCommand(), deploymentInfo.getBuildpack(),
                         null, deploymentInfo.getTimeout());
@@ -141,7 +149,7 @@ public class CloudFoundryPushPublisher extends Recorder {
 
             // Start of restart application
             StartingInfo startingInfo;
-            if (!alreadyExists) {
+            if (createNewApp) {
                 listener.getLogger().println("Starting application.");
                 startingInfo = client.startApplication(appName);
             } else {
@@ -358,8 +366,8 @@ public class CloudFoundryPushPublisher extends Recorder {
                 } else {
                     return FormValidation.warning(
                             "Connection successful, but your target's hostname does not start with \"api.\".\n" +
-                            "Make sure it is the real API endpoint and not a redirection, " +
-                            "or it may cause some problems.");
+                                    "Make sure it is the real API endpoint and not a redirection, " +
+                                    "or it may cause some problems.");
                 }
             } catch (MalformedURLException e) {
                 return FormValidation.error("Malformed target URL");

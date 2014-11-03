@@ -20,6 +20,9 @@
   </f:entry>
   <f:validateButton title="Test Connection" progress="Testing..."
                     method="testConnection" with="target,username,password,organization,cloudSpace,selfSigned"/>
+  <f:entry title="Reset app if already exists" field="resetIfExists">
+    <f:checkbox/>
+  </f:entry>
 
   <f:optionalBlock field="optionalManifest" title="Read app info from manifest.yml file"
                    negative="true" checked="${instance.optionalManifest == null}">
