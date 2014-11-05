@@ -16,11 +16,13 @@
     <version>1.585</version>
   </parent>
 
-  <groupId>com.activestate</groupId>
-  <artifactId>cloudfoundry-plugin</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <artifactId>cloudfoundry</artifactId>
+  <version>1.0</version>
   <packaging>hpi</packaging>
+
   <name>Cloud Foundry Plugin</name>
+  <description>Pushes a project to Cloud Foundry at the end of a build</description>
+  <url>http://wiki.jenkins-ci.org/display/JENKINS/Cloud+Foundry+Plugin</url>
 
   <licenses>
     <license>
@@ -51,11 +53,20 @@
     </dependency>
   </dependencies>
 
+  <scm>
+    <connection>scm:git:git://github.com/jenkinsci/cloudfoundry.git</connection>
+    <developerConnection>scm:git:git@github.com:jenkinsci/cloudfoundry.git</developerConnection>
+    <url>http://github.com/jenkinsci/cloudfoundry</url>
+  </scm>
+
   <repositories>
     <repository>
       <id>repo.jenkins-ci.org</id>
       <url>http://repo.jenkins-ci.org/public/</url>
     </repository>
+    <!-- A CF Java client shaded library is pre-installed in a local repository
+         to allow building the project in a single 'mvn clean install'.
+         See README.md for more details. -->
     <repository>
       <id>Local repository</id>
       <url>file://${basedir}/lib</url>
