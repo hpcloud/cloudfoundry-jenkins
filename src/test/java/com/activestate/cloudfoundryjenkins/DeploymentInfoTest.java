@@ -7,6 +7,7 @@ package com.activestate.cloudfoundryjenkins;
 import com.activestate.cloudfoundryjenkins.CloudFoundryPushPublisher.EnvironmentVariable;
 import com.activestate.cloudfoundryjenkins.CloudFoundryPushPublisher.OptionalManifest;
 import com.activestate.cloudfoundryjenkins.CloudFoundryPushPublisher.ServiceName;
+import hudson.FilePath;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -28,8 +29,9 @@ public class DeploymentInfoTest {
     @Test
     public void testReadManifestFileAllOptions() throws Exception {
         File manifestFile = new File(getClass().getResource("all-options-manifest.yml").toURI());
+        FilePath manifestFilePath = new FilePath(manifestFile);
         DeploymentInfo deploymentInfo =
-                new DeploymentInfo(System.out, manifestFile, null, "jenkins-build-name", "domain-name");
+                new DeploymentInfo(System.out, manifestFilePath, null, "jenkins-build-name", "domain-name");
 
         assertEquals("hello-java", deploymentInfo.getAppName());
         assertEquals(512, deploymentInfo.getMemory());
@@ -58,8 +60,9 @@ public class DeploymentInfoTest {
     @Test
     public void testReadManifestFileDefaultOptions() throws Exception {
         File manifestFile = new File(getClass().getResource("no-options-manifest.yml").toURI());
+        FilePath manifestFilePath = new FilePath(manifestFile);
         DeploymentInfo deploymentInfo =
-                new DeploymentInfo(System.out, manifestFile, null, "jenkins-build-name", "domain-name");
+                new DeploymentInfo(System.out, manifestFilePath, null, "jenkins-build-name", "domain-name");
 
         assertEquals("jenkins-build-name", deploymentInfo.getAppName());
         assertEquals(DEFAULT_MEMORY, deploymentInfo.getMemory());

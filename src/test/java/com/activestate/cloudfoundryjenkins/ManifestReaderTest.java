@@ -4,6 +4,7 @@
 
 package com.activestate.cloudfoundryjenkins;
 
+import hudson.FilePath;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -22,8 +23,9 @@ public class ManifestReaderTest {
 
     @Test
     public void testGetApplicationInfo() throws Exception {
-        File manifest = new File(getClass().getResource("hello-java-manifest.yml").toURI());
-        ManifestReader reader = new ManifestReader(manifest);
+        File manifestFile = new File(getClass().getResource("hello-java-manifest.yml").toURI());
+        FilePath manifestFilePath = new FilePath(manifestFile);
+        ManifestReader reader = new ManifestReader(manifestFilePath);
         Map<String, Object> result = reader.getApplicationInfo();
         assertEquals("hello-java", result.get("name"));
         assertEquals("512M", result.get("memory"));
@@ -32,8 +34,9 @@ public class ManifestReaderTest {
 
     @Test
     public void testGetApplicationInfoEnvVars() throws Exception {
-        File manifest = new File(getClass().getResource("env-vars-manifest.yml").toURI());
-        ManifestReader reader = new ManifestReader(manifest);
+        File manifestFile = new File(getClass().getResource("env-vars-manifest.yml").toURI());
+        FilePath manifestFilePath = new FilePath(manifestFile);
+        ManifestReader reader = new ManifestReader(manifestFilePath);
         Map<String, Object> result = reader.getApplicationInfo();
         assertEquals("hello-java", result.get("name"));
         assertEquals("512M", result.get("memory"));
@@ -47,8 +50,9 @@ public class ManifestReaderTest {
 
     @Test
     public void testGetApplicationInfoServicesNames() throws Exception {
-        File manifest = new File(getClass().getResource("services-names-manifest.yml").toURI());
-        ManifestReader reader = new ManifestReader(manifest);
+        File manifestFile = new File(getClass().getResource("services-names-manifest.yml").toURI());
+        FilePath manifestFilePath = new FilePath(manifestFile);
+        ManifestReader reader = new ManifestReader(manifestFilePath);
         Map<String, Object> result = reader.getApplicationInfo();
         assertEquals("hello-java", result.get("name"));
         assertEquals("512M", result.get("memory"));
@@ -64,32 +68,36 @@ public class ManifestReaderTest {
     public void testGetApplicationInfoMalformedYML() throws Exception {
         exception.expect(ManifestParsingException.class);
         exception.expectMessage("Malformed YAML file");
-        File manifest = new File(getClass().getResource("malformed-manifest.yml").toURI());
-        new ManifestReader(manifest);
+        File manifestFile = new File(getClass().getResource("malformed-manifest.yml").toURI());
+        FilePath manifestFilePath = new FilePath(manifestFile);
+        new ManifestReader(manifestFilePath);
     }
 
     @Test
     public void testGetApplicationInfoNotAMap() throws Exception {
         exception.expect(ManifestParsingException.class);
         exception.expectMessage("Could not parse the manifest file into a map");
-        File manifest = new File(getClass().getResource("not-a-map-manifest.yml").toURI());
-        new ManifestReader(manifest);
+        File manifestFile = new File(getClass().getResource("not-a-map-manifest.yml").toURI());
+        FilePath manifestFilePath = new FilePath(manifestFile);
+        new ManifestReader(manifestFilePath);
     }
 
     @Test
     public void testGetApplicationInfoNoApplicationBlock() throws Exception {
         exception.expect(ManifestParsingException.class);
         exception.expectMessage("Manifest file does not start with an 'applications' block");
-        File manifest = new File(getClass().getResource("no-application-block-manifest.yml").toURI());
-        new ManifestReader(manifest);
+        File manifestFile = new File(getClass().getResource("no-application-block-manifest.yml").toURI());
+        FilePath manifestFilePath = new FilePath(manifestFile);
+        new ManifestReader(manifestFilePath);
     }
 
     @Test
     public void testGetApplicationInfoWrongAppName() throws Exception {
         exception.expect(ManifestParsingException.class);
         exception.expectMessage("Manifest file does not contain an app named goodbye-java");
-        File manifest = new File(getClass().getResource("hello-java-manifest.yml").toURI());
-        ManifestReader reader = new ManifestReader(manifest);
+        File manifestFile = new File(getClass().getResource("hello-java-manifest.yml").toURI());
+        FilePath manifestFilePath = new FilePath(manifestFile);
+        ManifestReader reader = new ManifestReader(manifestFilePath);
         reader.getApplicationInfo("goodbye-java");
     }
 }

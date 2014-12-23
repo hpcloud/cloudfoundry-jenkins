@@ -4,6 +4,8 @@
 
 package com.activestate.cloudfoundryjenkins;
 
+import hudson.FilePath;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -29,7 +31,7 @@ public class DeploymentInfo {
     private Map<String, String> envVars = new HashMap<String, String>();
     private List<String> servicesNames = new ArrayList<String>();
 
-    public DeploymentInfo(PrintStream logger, File manifestFile, CloudFoundryPushPublisher.OptionalManifest optionalManifest,
+    public DeploymentInfo(PrintStream logger, FilePath manifestFile, CloudFoundryPushPublisher.OptionalManifest optionalManifest,
                           String jenkinsBuildName, String defaultDomain)
             throws IOException, ManifestParsingException, InterruptedException {
 

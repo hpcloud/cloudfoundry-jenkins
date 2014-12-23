@@ -4,6 +4,7 @@
 
 package com.activestate.cloudfoundryjenkins;
 
+import hudson.FilePath;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.scanner.ScannerException;
 
@@ -18,10 +19,10 @@ import java.util.Map;
 public class ManifestReader {
 
 
-    private final File manifestFile;
+    private final FilePath manifestFile;
     private List<Map<String, Object>> applicationList;
 
-    public ManifestReader(File manifestFile) throws ManifestParsingException, IOException {
+    public ManifestReader(FilePath manifestFile) throws ManifestParsingException, IOException {
         this.manifestFile = manifestFile;
         this.applicationList = parseManifest();
     }
@@ -77,13 +78,13 @@ public class ManifestReader {
      */
     private List<Map<String, Object>> parseManifest()
             throws IOException, ManifestParsingException {
-        InputStream inputStream = new FileInputStream(manifestFile);
+        InputStream inputStream = manifestFile.read();
         Yaml yaml = new Yaml();
         Object parsedYaml;
         try {
             parsedYaml = yaml.load(inputStream);
         } catch (ScannerException e) {
-            throw new ManifestParsingException("Malformed YAML file: " + manifestFile.getPath());
+            throw new ManifestParsingException("Malformed YAML file: " + manifestFile.getRemote());
         }
         Map<String, List<Map<String, Object>>> parsedYamlMap;
         try {
@@ -93,7 +94,7 @@ public class ManifestReader {
             parsedYamlMap = parsedYamlMapSuppressed;
         } catch (ClassCastException e) {
             throw new ManifestParsingException(
-                    "Could not parse the manifest file into a map: " + manifestFile.getPath());
+                    "Could not parse the manifest file into a map: " + manifestFile.getRemote());
         }
 
         List<Map<String, Object>> applicationList = parsedYamlMap.get("applications");

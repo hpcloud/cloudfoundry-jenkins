@@ -16,6 +16,8 @@ import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Publisher;
 import hudson.tasks.Recorder;
 import hudson.util.FormValidation;
+import net.lingala.zip4j.core.ZipFile;
+import net.lingala.zip4j.exception.ZipException;
 import org.cloudfoundry.client.lib.CloudCredentials;
 import org.cloudfoundry.client.lib.CloudFoundryClient;
 import org.cloudfoundry.client.lib.CloudFoundryException;
@@ -26,14 +28,14 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 
 import javax.net.ssl.SSLPeerUnverifiedException;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 public class CloudFoundryPushPublisher extends Recorder {
 
@@ -81,9 +83,8 @@ public class CloudFoundryPushPublisher extends Recorder {
             String domain = split[split.length - 1];
 
             FilePath manifestFilePath = new FilePath(build.getWorkspace(), DEFAULT_MANIFEST_PATH);
-            File manifestFile = new File(manifestFilePath.toURI());
             DeploymentInfo deploymentInfo =
-                    new DeploymentInfo(listener.getLogger(), manifestFile, optionalManifest, jenkinsBuildName, domain);
+                    new DeploymentInfo(listener.getLogger(), manifestFilePath, optionalManifest, jenkinsBuildName, domain);
             String appName = deploymentInfo.getAppName();
             setAppURI("https://" + deploymentInfo.getHostname() + "." + deploymentInfo.getDomain());
 
@@ -144,10 +145,25 @@ public class CloudFoundryPushPublisher extends Recorder {
             // Push files
             listener.getLogger().println("Pushing app bits.");
             FilePath appPath = new FilePath(build.getWorkspace(), deploymentInfo.getAppPath());
-            File appFile = new File(appPath.toURI());
-            client.uploadApplication(appName, appFile);
+            if (appPath.isDirectory()) {
+                // In case the build is distributed, we need to make a copy of the target directory on the slave
+                File appFile = File.createTempFile("appFile", null); // This is on the slave
+                OutputStream outputStream = new FileOutputStream(appFile);
+                appPath.zip(outputStream, "*"); // The "*" is needed to prevent the directory itself to be in the archive
 
-            // Start of restart application
+                // We now have a zip file on the slave, extract it into a directory
+                ZipFile appZipFile = new ZipFile(appFile);
+                File outputDirectory = new File(appFile.getAbsolutePath().split("\\.")[0]);
+                appZipFile.extractAll(outputDirectory.getAbsolutePath());
+                client.uploadApplication(appName, outputDirectory);
+
+            } else {
+                // If the target path is a single file, we can just use an InputStream
+                // The CF client will make a temp file on the slave from the InputStream
+                client.uploadApplication(appName, appPath.getName(), appPath.read());
+            }
+
+            // Start or restart application
             StartingInfo startingInfo;
             if (createNewApp) {
                 listener.getLogger().println("Starting application.");
@@ -248,12 +264,15 @@ public class CloudFoundryPushPublisher extends Recorder {
             listener.getLogger().println("ERROR: Could not parse manifest: " + e.getMessage());
             return false;
         } catch (FileNotFoundException e) {
-            listener.getLogger().println("ERROR: Could not find manifest file: " + e.getMessage());
+            listener.getLogger().println("ERROR: Could not find file: " + e.getMessage());
             return false;
         } catch (InterruptedException e) {
             e.printStackTrace();
             return false;
         } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        } catch (ZipException e) {
             e.printStackTrace();
             return false;
         }
