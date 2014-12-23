@@ -13,13 +13,15 @@ In order to avoid the use of a `mvn install-file` command on every new machine, 
 Maven repository in the `lib` subfolder, with the shaded library already installed. This allows building the plugin in 
 a single `mvn install` command.
 
-The command that was used to install the library to the local Maven repository is:
+The command that was used to install the library to the local Maven repository is (from the root of the project):
 
 ```
 mvn org.apache.maven.plugins:maven-install-plugin:2.5.1:install-file \
--Dfile=lib/cloudfoundry-client-lib-shaded-1.0.3.jar \
+-Dfile=cloudfoundry-client-lib-shaded-1.0.6.jar \
 -DlocalRepositoryPath=lib
 ```
+
+You do not need to use this command since it has already been done, and the shaded jar is now in the `lib` folder.
 
 Debugging:
 ----------
