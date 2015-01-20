@@ -276,6 +276,10 @@ public class CloudFoundryPushPublisher extends Recorder {
                 listener.getLogger().println("ERROR: Wrong username or password: " + e.getMessage());
             } else {
                 listener.getLogger().println("ERROR: Unknown CloudFoundryException: " + e.getMessage());
+                listener.getLogger().println("ERROR: Cloud Foundry error code: " + e.getCloudFoundryErrorCode());
+                if (e.getDescription() != null) {
+                    listener.getLogger().println("ERROR: " + e.getDescription());
+                }
             }
             return false;
         } catch (ManifestParsingException e) {
