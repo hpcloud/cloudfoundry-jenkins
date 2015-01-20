@@ -16,6 +16,7 @@ import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Publisher;
 import hudson.tasks.Recorder;
 import hudson.util.FormValidation;
+import jenkins.model.Jenkins;
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 import org.cloudfoundry.client.lib.CloudCredentials;
@@ -34,8 +35,6 @@ import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
 public class CloudFoundryPushPublisher extends Recorder {
 
@@ -145,22 +144,41 @@ public class CloudFoundryPushPublisher extends Recorder {
             // Push files
             listener.getLogger().println("Pushing app bits.");
             FilePath appPath = new FilePath(build.getWorkspace(), deploymentInfo.getAppPath());
-            if (appPath.isDirectory()) {
-                // In case the build is distributed, we need to make a copy of the target directory on the slave
-                File appFile = File.createTempFile("appFile", null); // This is on the slave
-                OutputStream outputStream = new FileOutputStream(appFile);
-                appPath.zip(outputStream, "*"); // The "*" is needed to prevent the directory itself to be in the archive
 
-                // We now have a zip file on the slave, extract it into a directory
-                ZipFile appZipFile = new ZipFile(appFile);
-                File outputDirectory = new File(appFile.getAbsolutePath().split("\\.")[0]);
-                appZipFile.extractAll(outputDirectory.getAbsolutePath());
-                client.uploadApplication(appName, outputDirectory);
+            if (appPath.getChannel() != Jenkins.MasterComputer.localChannel) {
+                if (appPath.isDirectory()) {
+                    // The build is distributed, and a directory
+                    // We need to make a copy of the target directory on the master
+                    File appFile = File.createTempFile("appFile", null); // This is on the master
+                    appFile.deleteOnExit();
+                    OutputStream outputStream = new FileOutputStream(appFile);
+                    appPath.zip(outputStream);
 
+                    // We now have a zip file on the master, extract it into a directory
+                    ZipFile appZipFile = new ZipFile(appFile);
+                    File outputDirectory = new File(appFile.getAbsolutePath().split("\\.")[0]);
+                    outputDirectory.deleteOnExit();
+                    appZipFile.extractAll(outputDirectory.getAbsolutePath());
+                    // appPath.zip() creates a top level directory that we want to remove
+                    File[] listFiles = outputDirectory.listFiles();
+                    if (listFiles != null && listFiles.length == 1) {
+                        outputDirectory = listFiles[0];
+                    } else {
+                        // This should never happen because appPath.zip() always makes a directory
+                        throw new IllegalStateException("Unzipped output directory was empty.");
+                    }
+                    // We can now use outputDirectory which is a copy of the target directory but on master
+                    client.uploadApplication(appName, outputDirectory);
+
+                } else {
+                    // If the target path is a single file, we can just use an InputStream
+                    // The CF client will make a temp file on the master from the InputStream
+                    client.uploadApplication(appName, appPath.getName(), appPath.read());
+                }
             } else {
-                // If the target path is a single file, we can just use an InputStream
-                // The CF client will make a temp file on the slave from the InputStream
-                client.uploadApplication(appName, appPath.getName(), appPath.read());
+                // If the build is not distributed, we can convert the FilePath to a File without problems
+                File targetFile = new File(appPath.toURI());
+                client.uploadApplication(appName, targetFile);
             }
 
             // Start or restart application
@@ -267,13 +285,13 @@ public class CloudFoundryPushPublisher extends Recorder {
             listener.getLogger().println("ERROR: Could not find file: " + e.getMessage());
             return false;
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            listener.getLogger().println("ERROR: InterruptedException: " + e.getMessage());
             return false;
         } catch (IOException e) {
-            e.printStackTrace();
+            listener.getLogger().println("ERROR: IOException: " + e.getMessage());
             return false;
         } catch (ZipException e) {
-            e.printStackTrace();
+            listener.getLogger().println("ERROR: ZipException: " + e.getMessage());
             return false;
         }
     }
