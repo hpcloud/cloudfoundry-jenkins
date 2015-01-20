@@ -62,10 +62,10 @@
     </f:entry>
 
     <f:entry title="Services">
-      <f:repeatable var="services" items="${instance.optionalManifest.services}">
+      <f:repeatable var="servicesNames" items="${instance.optionalManifest.servicesNames}">
         <table width="100%">
           <f:entry title="Name" field="name">
-            <f:textbox value="${services.name}"/>
+            <f:textbox value="${servicesNames.name}"/>
           </f:entry>
         </table>
         <div align="right">
