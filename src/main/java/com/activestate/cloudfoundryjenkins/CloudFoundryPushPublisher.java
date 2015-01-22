@@ -35,6 +35,7 @@ import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class CloudFoundryPushPublisher extends Recorder {
 
@@ -50,8 +51,7 @@ public class CloudFoundryPushPublisher extends Recorder {
     public final boolean resetIfExists;
     public final OptionalManifest optionalManifest;
 
-
-    private String appURI;
+    private List<String> appURIs = new ArrayList<String>();
 
     @DataBoundConstructor
     public CloudFoundryPushPublisher(String target, String organization, String cloudSpace,
@@ -77,15 +77,62 @@ public class CloudFoundryPushPublisher extends Recorder {
             String jenkinsBuildName = build.getProject().getDisplayName();
 
             URL targetUrl = new URL(target);
-
             String[] split = target.split("\\.", 2);
             String domain = split[split.length - 1];
 
             FilePath manifestFilePath = new FilePath(build.getWorkspace(), DEFAULT_MANIFEST_PATH);
-            DeploymentInfo deploymentInfo =
-                    new DeploymentInfo(listener.getLogger(), manifestFilePath, optionalManifest, jenkinsBuildName, domain);
+
+            // Get all deployment info
+            List<DeploymentInfo> allDeploymentInfo = new ArrayList<DeploymentInfo>();
+            if (optionalManifest == null) {
+                // Read manifest.yml
+                ManifestReader manifestReader = new ManifestReader(manifestFilePath);
+                List<Map<String, Object>> appList = manifestReader.getApplicationList();
+                for (Map<String, Object> appInfo : appList) {
+                    allDeploymentInfo.add(new DeploymentInfo(listener.getLogger(), appInfo, jenkinsBuildName, domain));
+                }
+            } else {
+                // Read Jenkins configuration
+                allDeploymentInfo.add(new DeploymentInfo(listener.getLogger(), optionalManifest, jenkinsBuildName, domain));
+            }
+
+            boolean success = true;
+            for (DeploymentInfo deploymentInfo : allDeploymentInfo) {
+                boolean lastSuccess = processOneApp(deploymentInfo, build, listener, targetUrl);
+                // If an app fails, the build status is failure, but we should still try pushing them
+                success = success && lastSuccess;
+            }
+            return success;
+        } catch (MalformedURLException e) {
+            listener.getLogger().println("ERROR: The target URL is not valid: " + e.getMessage());
+            return false;
+        } catch (ResourceAccessException e) {
+            if (e.getCause() instanceof UnknownHostException) {
+                listener.getLogger().println("ERROR: Unknown host: " + e.getMessage());
+            } else if (e.getCause() instanceof SSLPeerUnverifiedException) {
+                listener.getLogger().println("ERROR: Certificate is not verified: " + e.getMessage());
+            } else {
+                listener.getLogger().println("ERROR: Unknown ResourceAccessException: " + e.getMessage());
+            }
+            return false;
+        } catch (ManifestParsingException e) {
+            listener.getLogger().println("ERROR: Could not parse manifest: " + e.getMessage());
+            return false;
+        } catch (IOException e) {
+            listener.getLogger().println("ERROR: IOException: " + e.getMessage());
+            return false;
+        } catch (InterruptedException e) {
+            listener.getLogger().println("ERROR: InterruptedException: " + e.getMessage());
+            return false;
+        }
+    }
+
+    private boolean processOneApp(DeploymentInfo deploymentInfo, AbstractBuild build, BuildListener listener, URL targetUrl)
+            throws IOException, InterruptedException {
+        try {
             String appName = deploymentInfo.getAppName();
-            setAppURI("https://" + deploymentInfo.getHostname() + "." + deploymentInfo.getDomain());
+            String appURI = "https://" + deploymentInfo.getHostname() + "." + deploymentInfo.getDomain();
+            addToAppURIs(appURI);
 
             CloudCredentials credentials = new CloudCredentials(username, password);
             CloudFoundryClient client = new CloudFoundryClient(credentials, targetUrl, organization, cloudSpace,
@@ -121,7 +168,7 @@ public class CloudFoundryPushPublisher extends Recorder {
                 Staging staging = new Staging(deploymentInfo.getCommand(), deploymentInfo.getBuildpack(),
                         null, deploymentInfo.getTimeout());
                 List<String> uris = new ArrayList<String>();
-                uris.add(getAppURI());
+                uris.add(appURI);
                 List<String> services = deploymentInfo.getServicesNames();
                 client.createApplication(appName, staging, deploymentInfo.getMemory(), uris, services);
             }
@@ -249,7 +296,7 @@ public class CloudFoundryPushPublisher extends Recorder {
                 if (deploymentInfo.isNoRoute()) {
                     listener.getLogger().println("Application is now running. (No route)");
                 } else {
-                    listener.getLogger().println("Application is now running at " + getAppURI());
+                    listener.getLogger().println("Application is now running at " + appURI);
                 }
                 listener.getLogger().println("Cloud Foundry push successful.");
                 return true;
@@ -258,19 +305,6 @@ public class CloudFoundryPushPublisher extends Recorder {
                 listener.getLogger().println("Cloud Foundry push failed.");
                 return false;
             }
-
-        } catch (MalformedURLException e) {
-            listener.getLogger().println("ERROR: The target URL is not valid: " + e.getMessage());
-            return false;
-        } catch (ResourceAccessException e) {
-            if (e.getCause() instanceof UnknownHostException) {
-                listener.getLogger().println("ERROR: Unknown host: " + e.getMessage());
-            } else if (e.getCause() instanceof SSLPeerUnverifiedException) {
-                listener.getLogger().println("ERROR: Certificate is not verified: " + e.getMessage());
-            } else {
-                listener.getLogger().println("ERROR: Unknown ResourceAccessException: " + e.getMessage());
-            }
-            return false;
         } catch (CloudFoundryException e) {
             if (e.getMessage().equals("403 Access token denied.")) {
                 listener.getLogger().println("ERROR: Wrong username or password: " + e.getMessage());
@@ -282,17 +316,8 @@ public class CloudFoundryPushPublisher extends Recorder {
                 }
             }
             return false;
-        } catch (ManifestParsingException e) {
-            listener.getLogger().println("ERROR: Could not parse manifest: " + e.getMessage());
-            return false;
         } catch (FileNotFoundException e) {
             listener.getLogger().println("ERROR: Could not find file: " + e.getMessage());
-            return false;
-        } catch (InterruptedException e) {
-            listener.getLogger().println("ERROR: InterruptedException: " + e.getMessage());
-            return false;
-        } catch (IOException e) {
-            listener.getLogger().println("ERROR: IOException: " + e.getMessage());
             return false;
         } catch (ZipException e) {
             listener.getLogger().println("ERROR: ZipException: " + e.getMessage());
@@ -304,12 +329,12 @@ public class CloudFoundryPushPublisher extends Recorder {
         return BuildStepMonitor.NONE;
     }
 
-    public String getAppURI() {
-        return appURI;
+    public List<String> getAppURIs() {
+        return appURIs;
     }
 
-    public void setAppURI(String appURI) {
-        this.appURI = appURI;
+    public void addToAppURIs(String appURI) {
+        this.appURIs.add(appURI);
     }
 
     public static class OptionalManifest {

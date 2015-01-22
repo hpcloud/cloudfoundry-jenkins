@@ -8,8 +8,6 @@ import hudson.FilePath;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.scanner.ScannerException;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
@@ -101,6 +99,10 @@ public class ManifestReader {
         if (applicationList == null) {
             throw new ManifestParsingException("Manifest file does not start with an 'applications' block.");
         }
+        return applicationList;
+    }
+
+    public List<Map<String, Object>> getApplicationList() {
         return applicationList;
     }
 }

@@ -4,9 +4,6 @@
 
 package com.activestate.cloudfoundryjenkins;
 
-import hudson.FilePath;
-
-import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -31,25 +28,33 @@ public class DeploymentInfo {
     private Map<String, String> envVars = new HashMap<String, String>();
     private List<String> servicesNames = new ArrayList<String>();
 
-    public DeploymentInfo(PrintStream logger, FilePath manifestFile, CloudFoundryPushPublisher.OptionalManifest optionalManifest,
+    /**
+     * Constructor for reading the manifest.yml file
+     */
+    public DeploymentInfo(PrintStream logger, Map<String, Object> appInfo, String jenkinsBuildName, String defaultDomain)
+            throws IOException, ManifestParsingException, InterruptedException {
+
+        readManifestFile(logger, appInfo, jenkinsBuildName, defaultDomain);
+    }
+
+    /**
+     * Constructor for reading the optional Jenkins config
+     */
+    public DeploymentInfo(PrintStream logger, CloudFoundryPushPublisher.OptionalManifest optionalManifest,
                           String jenkinsBuildName, String defaultDomain)
             throws IOException, ManifestParsingException, InterruptedException {
 
-        if (optionalManifest == null) {
-            // Read manifest.yml
-            ManifestReader manifestReader = new ManifestReader(manifestFile);
-            Map<String, Object> applicationInfo = manifestReader.getApplicationInfo(null);
-            readManifestFile(logger, applicationInfo, jenkinsBuildName, defaultDomain);
-        } else {
-            // Read Jenkins configuration
-            readOptionalJenkinsConfig(logger, optionalManifest, jenkinsBuildName, defaultDomain);
-        }
+        readOptionalJenkinsConfig(logger, optionalManifest, jenkinsBuildName, defaultDomain);
     }
 
     private void readManifestFile(PrintStream logger, Map<String, Object> manifestJson,
                                   String jenkinsBuildName, String defaultDomain) {
 
         // Important optional attributes, we should warn in case they are missing
+
+        if (manifestJson == null) {
+            manifestJson = new HashMap<String, Object>();
+        }
 
         appName = (String) manifestJson.get("name");
         if (appName == null) {
@@ -74,7 +79,6 @@ public class DeploymentInfo {
         }
 
         // Non-important optional attributes, no need to warn
-
         Integer instances = (Integer) manifestJson.get("instances");
         if (instances == null) {
             instances = CloudFoundryPushPublisher.DescriptorImpl.DEFAULT_INSTANCES;

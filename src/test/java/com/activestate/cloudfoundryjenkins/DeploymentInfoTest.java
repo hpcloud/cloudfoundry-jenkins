@@ -30,8 +30,10 @@ public class DeploymentInfoTest {
     public void testReadManifestFileAllOptions() throws Exception {
         File manifestFile = new File(getClass().getResource("all-options-manifest.yml").toURI());
         FilePath manifestFilePath = new FilePath(manifestFile);
+        ManifestReader manifestReader = new ManifestReader(manifestFilePath);
+        Map<String, Object> appInfo = manifestReader.getApplicationInfo();
         DeploymentInfo deploymentInfo =
-                new DeploymentInfo(System.out, manifestFilePath, null, "jenkins-build-name", "domain-name");
+                new DeploymentInfo(System.out, appInfo, "jenkins-build-name", "domain-name");
 
         assertEquals("hello-java", deploymentInfo.getAppName());
         assertEquals(512, deploymentInfo.getMemory());
@@ -61,8 +63,10 @@ public class DeploymentInfoTest {
     public void testReadManifestFileDefaultOptions() throws Exception {
         File manifestFile = new File(getClass().getResource("no-options-manifest.yml").toURI());
         FilePath manifestFilePath = new FilePath(manifestFile);
+        ManifestReader manifestReader = new ManifestReader(manifestFilePath);
+        Map<String, Object> appInfo = manifestReader.getApplicationInfo();
         DeploymentInfo deploymentInfo =
-                new DeploymentInfo(System.out, manifestFilePath, null, "jenkins-build-name", "domain-name");
+                new DeploymentInfo(System.out, appInfo, "jenkins-build-name", "domain-name");
 
         assertEquals("jenkins-build-name", deploymentInfo.getAppName());
         assertEquals(DEFAULT_MEMORY, deploymentInfo.getMemory());
@@ -96,7 +100,7 @@ public class DeploymentInfoTest {
                         "https://github.com/heroku/heroku-buildpack-hello",
                         "echo Hello", "testdomain.local", envVars, services);
         DeploymentInfo deploymentInfo =
-                new DeploymentInfo(System.out, null, jenkinsManifest, "jenkins-build-name", "domain-name");
+                new DeploymentInfo(System.out, jenkinsManifest, "jenkins-build-name", "domain-name");
 
         assertEquals("hello-java", deploymentInfo.getAppName());
         assertEquals(512, deploymentInfo.getMemory());
@@ -127,7 +131,7 @@ public class DeploymentInfoTest {
         OptionalManifest jenkinsManifest =
                 new OptionalManifest("", 0, "", 0, 0, false, "", "", "", "", null, null);
         DeploymentInfo deploymentInfo =
-                new DeploymentInfo(System.out, null, jenkinsManifest, "jenkins-build-name", "domain-name");
+                new DeploymentInfo(System.out, jenkinsManifest, "jenkins-build-name", "domain-name");
 
         assertEquals("jenkins-build-name", deploymentInfo.getAppName());
         assertEquals(DEFAULT_MEMORY, deploymentInfo.getMemory());
