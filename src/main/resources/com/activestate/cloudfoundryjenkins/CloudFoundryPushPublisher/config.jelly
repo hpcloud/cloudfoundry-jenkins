@@ -1,13 +1,10 @@
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:c="/lib/credentials">
   <f:entry title="Target" field="target">
     <f:textbox/>
   </f:entry>
-  <f:entry title="Username or Email" field="username">
-    <f:textbox/>
-  </f:entry>
-  <f:entry title="Password" field="password">
-    <f:password/>
+  <f:entry title="Credentials" field="credentialsId">
+    <c:select/>
   </f:entry>
   <f:entry title="Organization" field="organization">
     <f:textbox/>
@@ -19,7 +16,7 @@
     <f:checkbox/>
   </f:entry>
   <f:validateButton title="Test Connection" progress="Testing..."
-                    method="testConnection" with="target,username,password,organization,cloudSpace,selfSigned"/>
+                    method="testConnection" with="target,username,password,credentialsId,organization,cloudSpace,selfSigned"/>
   <f:entry title="Reset app if already exists" field="resetIfExists">
     <f:checkbox/>
   </f:entry>

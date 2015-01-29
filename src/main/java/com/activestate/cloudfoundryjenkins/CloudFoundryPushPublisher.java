@@ -4,22 +4,32 @@
 
 package com.activestate.cloudfoundryjenkins;
 
+import com.cloudbees.plugins.credentials.CredentialsMatchers;
+import com.cloudbees.plugins.credentials.CredentialsProvider;
+import com.cloudbees.plugins.credentials.common.StandardListBoxModel;
+import com.cloudbees.plugins.credentials.common.StandardUsernameCredentials;
+import com.cloudbees.plugins.credentials.common.StandardUsernamePasswordCredentials;
+import com.cloudbees.plugins.credentials.domains.URIRequirementBuilder;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.ProxyConfiguration;
 import hudson.model.*;
+import hudson.security.ACL;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Publisher;
 import hudson.tasks.Recorder;
 import hudson.util.FormValidation;
+import hudson.util.ListBoxModel;
+import hudson.util.Secret;
 import jenkins.model.Jenkins;
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 import org.cloudfoundry.client.lib.*;
 import org.cloudfoundry.client.lib.domain.*;
 import org.cloudfoundry.client.lib.org.springframework.web.client.ResourceAccessException;
+import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 
@@ -41,8 +51,7 @@ public class CloudFoundryPushPublisher extends Recorder {
     public final String target;
     public final String organization;
     public final String cloudSpace;
-    public final String username;
-    public final String password;
+    public final String credentialsId;
     public final boolean selfSigned;
     public final boolean resetIfExists;
     public final OptionalManifest optionalManifest;
@@ -51,13 +60,12 @@ public class CloudFoundryPushPublisher extends Recorder {
 
     @DataBoundConstructor
     public CloudFoundryPushPublisher(String target, String organization, String cloudSpace,
-                                     String username, String password, boolean selfSigned,
+                                     String credentialsId, boolean selfSigned,
                                      boolean resetIfExists, OptionalManifest optionalManifest) {
         this.target = target;
         this.organization = organization;
         this.cloudSpace = cloudSpace;
-        this.username = username;
-        this.password = password;
+        this.credentialsId = credentialsId;
         this.selfSigned = selfSigned;
         this.resetIfExists = resetIfExists;
         this.optionalManifest = optionalManifest;
@@ -130,10 +138,25 @@ public class CloudFoundryPushPublisher extends Recorder {
             String appURI = "https://" + deploymentInfo.getHostname() + "." + deploymentInfo.getDomain();
             addToAppURIs(appURI);
 
-            CloudCredentials credentials = new CloudCredentials(username, password);
+            List<StandardUsernamePasswordCredentials> standardCredentials = CredentialsProvider.lookupCredentials(
+                    StandardUsernamePasswordCredentials.class,
+                    build.getProject(),
+                    ACL.SYSTEM,
+                    URIRequirementBuilder.fromUri(appURI).build());
+
+            StandardUsernamePasswordCredentials credentials =
+                    CredentialsMatchers.firstOrNull(standardCredentials, CredentialsMatchers.withId(credentialsId));
+
+            if (credentials == null) {
+                listener.getLogger().println("ERROR: No credentials have been given.");
+                return false;
+            }
+
+            CloudCredentials cloudCredentials =
+                    new CloudCredentials(credentials.getUsername(), Secret.toString(credentials.getPassword()));
             HttpProxyConfiguration proxyConfig = buildProxyConfiguration(targetUrl);
 
-            CloudFoundryClient client = new CloudFoundryClient(credentials, targetUrl, organization, cloudSpace,
+            CloudFoundryClient client = new CloudFoundryClient(cloudCredentials, targetUrl, organization, cloudSpace,
                     proxyConfig, selfSigned);
             client.login();
 
@@ -427,19 +450,45 @@ public class CloudFoundryPushPublisher extends Recorder {
         }
 
         @SuppressWarnings("unused")
-        public FormValidation doTestConnection(@QueryParameter("target") final String target,
-                                               @QueryParameter("username") final String username,
-                                               @QueryParameter("password") final String password,
+        public ListBoxModel doFillCredentialsIdItems(@AncestorInPath ItemGroup context,
+                                                     @QueryParameter("target") final String target) {
+            StandardListBoxModel result = new StandardListBoxModel();
+            result.withEmptySelection();
+            result.withMatching(CredentialsMatchers.instanceOf(StandardUsernamePasswordCredentials.class),
+                    CredentialsProvider.lookupCredentials(
+                            StandardUsernameCredentials.class,
+                            context,
+                            ACL.SYSTEM,
+                            URIRequirementBuilder.fromUri(target).build()
+                    )
+            );
+            return result;
+        }
+
+        @SuppressWarnings("unused")
+        public FormValidation doTestConnection(@AncestorInPath ItemGroup context,
+                                               @QueryParameter("target") final String target,
+                                               @QueryParameter("credentialsId") final String credentialsId,
                                                @QueryParameter("organization") final String organization,
                                                @QueryParameter("cloudSpace") final String cloudSpace,
                                                @QueryParameter("selfSigned") final boolean selfSigned) {
 
             try {
                 URL targetUrl = new URL(target);
-                CloudCredentials credentials = new CloudCredentials(username, password);
+                List<StandardUsernamePasswordCredentials> standardCredentials = CredentialsProvider.lookupCredentials(
+                        StandardUsernamePasswordCredentials.class,
+                        context,
+                        ACL.SYSTEM,
+                        URIRequirementBuilder.fromUri(target).build());
+
+                StandardUsernamePasswordCredentials credentials =
+                        CredentialsMatchers.firstOrNull(standardCredentials, CredentialsMatchers.withId(credentialsId));
+
+                CloudCredentials cloudCredentials =
+                        new CloudCredentials(credentials.getUsername(), Secret.toString(credentials.getPassword()));
                 HttpProxyConfiguration proxyConfig = buildProxyConfiguration(targetUrl);
 
-                CloudFoundryClient client = new CloudFoundryClient(credentials, targetUrl, organization, cloudSpace,
+                CloudFoundryClient client = new CloudFoundryClient(cloudCredentials, targetUrl, organization, cloudSpace,
                         proxyConfig, selfSigned);
                 client.login();
                 client.getCloudInfo();
@@ -496,12 +545,7 @@ public class CloudFoundryPushPublisher extends Recorder {
         }
 
         @SuppressWarnings("unused")
-        public FormValidation doCheckUsername(@QueryParameter String value) {
-            return FormValidation.validateRequired(value);
-        }
-
-        @SuppressWarnings("unused")
-        public FormValidation doCheckPassword(@QueryParameter String value) {
+        public FormValidation doCheckCredentialsId(@QueryParameter String value) {
             return FormValidation.validateRequired(value);
         }
 
