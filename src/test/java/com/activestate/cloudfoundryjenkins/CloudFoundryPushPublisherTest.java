@@ -80,7 +80,8 @@ public class CloudFoundryPushPublisherTest {
 
         CredentialsStore store = CredentialsProvider.lookupStores(j.getInstance()).iterator().next();
         store.addCredentials(Domain.global(),
-                new UsernamePasswordCredentialsImpl(CredentialsScope.GLOBAL, "testCredentialsId", "", TEST_USERNAME, TEST_PASSWORD));
+                new UsernamePasswordCredentialsImpl(CredentialsScope.GLOBAL, "testCredentialsId", "",
+                        TEST_USERNAME, TEST_PASSWORD));
     }
 
     @Test
@@ -414,8 +415,8 @@ public class CloudFoundryPushPublisherTest {
     public void testPerformUnknownHost() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
         project.setScm(new ExtractResourceSCM(getClass().getResource("hello-java.zip")));
-        CloudFoundryPushPublisher cf = new CloudFoundryPushPublisher("https://does-not-exist.local", TEST_ORG, TEST_SPACE,
-                "testCredentialsId", false, false, null);
+        CloudFoundryPushPublisher cf = new CloudFoundryPushPublisher("https://does-not-exist.local",
+                TEST_ORG, TEST_SPACE, "testCredentialsId", false, false, null);
         project.getPublishersList().add(cf);
         FreeStyleBuild build = project.scheduleBuild2(0).get();
         System.out.println(build.getDisplayName() + " completed");
@@ -434,7 +435,8 @@ public class CloudFoundryPushPublisherTest {
 
         CredentialsStore store = CredentialsProvider.lookupStores(j.getInstance()).iterator().next();
         store.addCredentials(Domain.global(),
-                new UsernamePasswordCredentialsImpl(CredentialsScope.GLOBAL, "wrongCredentialsId", "", "wrongName", "wrongPass"));
+                new UsernamePasswordCredentialsImpl(CredentialsScope.GLOBAL, "wrongCredentialsId", "",
+                        "wrongName", "wrongPass"));
         CloudFoundryPushPublisher cf = new CloudFoundryPushPublisher(TEST_TARGET, TEST_ORG, TEST_SPACE,
                 "wrongCredentialsId", false, false, null);
         project.getPublishersList().add(cf);

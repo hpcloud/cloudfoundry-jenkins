@@ -15,8 +15,8 @@
   <f:entry title="Allow self-signed certificate" field="selfSigned">
     <f:checkbox/>
   </f:entry>
-  <f:validateButton title="Test Connection" progress="Testing..."
-                    method="testConnection" with="target,username,password,credentialsId,organization,cloudSpace,selfSigned"/>
+  <f:validateButton title="Test Connection" progress="Testing..." method="testConnection"
+                    with="target,username,password,credentialsId,organization,cloudSpace,selfSigned"/>
   <f:entry title="Reset app if already exists" field="resetIfExists">
     <f:checkbox/>
   </f:entry>

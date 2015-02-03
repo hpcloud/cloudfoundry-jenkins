@@ -4,6 +4,11 @@
 
 package com.activestate.cloudfoundryjenkins;
 
+import com.activestate.cloudfoundryjenkins.CloudFoundryPushPublisher.DescriptorImpl;
+import com.activestate.cloudfoundryjenkins.CloudFoundryPushPublisher.EnvironmentVariable;
+import com.activestate.cloudfoundryjenkins.CloudFoundryPushPublisher.ManifestChoice;
+import com.activestate.cloudfoundryjenkins.CloudFoundryPushPublisher.ServiceName;
+
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -31,8 +36,8 @@ public class DeploymentInfo {
     /**
      * Constructor for reading the manifest.yml file
      */
-    public DeploymentInfo(PrintStream logger, Map<String, Object> appInfo, String jenkinsBuildName, String defaultDomain)
-            throws IOException, ManifestParsingException, InterruptedException {
+    public DeploymentInfo(PrintStream logger, Map<String, Object> appInfo, String jenkinsBuildName,
+                          String defaultDomain) throws IOException, ManifestParsingException, InterruptedException {
 
         readManifestFile(logger, appInfo, jenkinsBuildName, defaultDomain);
     }
@@ -40,11 +45,11 @@ public class DeploymentInfo {
     /**
      * Constructor for reading the optional Jenkins config
      */
-    public DeploymentInfo(PrintStream logger, CloudFoundryPushPublisher.OptionalManifest optionalManifest,
+    public DeploymentInfo(PrintStream logger, ManifestChoice optionalJenkinsConfig,
                           String jenkinsBuildName, String defaultDomain)
             throws IOException, ManifestParsingException, InterruptedException {
 
-        readOptionalJenkinsConfig(logger, optionalManifest, jenkinsBuildName, defaultDomain);
+        readOptionalJenkinsConfig(logger, optionalJenkinsConfig, jenkinsBuildName, defaultDomain);
     }
 
     private void readManifestFile(PrintStream logger, Map<String, Object> manifestJson,
@@ -65,8 +70,9 @@ public class DeploymentInfo {
         int memory = 0;
         String memString = (String) manifestJson.get("memory");
         if (memString == null) {
-            logger.println("WARNING: No manifest value for memory. Using default value: " + CloudFoundryPushPublisher.DescriptorImpl.DEFAULT_MEMORY);
-            memory = CloudFoundryPushPublisher.DescriptorImpl.DEFAULT_MEMORY;
+            logger.println("WARNING: No manifest value for memory. Using default value: " +
+                    DescriptorImpl.DEFAULT_MEMORY);
+            memory = DescriptorImpl.DEFAULT_MEMORY;
         } else if (memString.toLowerCase().endsWith("m")) {
             memory = Integer.parseInt(memString.substring(0, memString.length() - 1));
         }
@@ -81,13 +87,13 @@ public class DeploymentInfo {
         // Non-important optional attributes, no need to warn
         Integer instances = (Integer) manifestJson.get("instances");
         if (instances == null) {
-            instances = CloudFoundryPushPublisher.DescriptorImpl.DEFAULT_INSTANCES;
+            instances = DescriptorImpl.DEFAULT_INSTANCES;
         }
         this.instances = instances;
 
         Integer timeout = (Integer) manifestJson.get("timeout");
         if (timeout == null) {
-            timeout = CloudFoundryPushPublisher.DescriptorImpl.DEFAULT_TIMEOUT;
+            timeout = DescriptorImpl.DEFAULT_TIMEOUT;
         }
         this.timeout = timeout;
 
@@ -135,67 +141,67 @@ public class DeploymentInfo {
         }
     }
 
-    private void readOptionalJenkinsConfig(PrintStream logger, CloudFoundryPushPublisher.OptionalManifest optionalManifest,
+    private void readOptionalJenkinsConfig(PrintStream logger, ManifestChoice jenkinsConfig,
                                            String jenkinsBuildName, String defaultDomain) {
 
-        this.appName = optionalManifest.appName;
+        this.appName = jenkinsConfig.appName;
         if (appName.equals("")) {
             logger.println("WARNING: No application name. Using Jenkins build name: " + jenkinsBuildName);
             appName = jenkinsBuildName;
         }
-        this.memory = optionalManifest.memory;
+        this.memory = jenkinsConfig.memory;
         if (memory == 0) {
-            logger.println("WARNING: Missing value for memory. Using default value: " + CloudFoundryPushPublisher.DescriptorImpl.DEFAULT_MEMORY);
-            memory = CloudFoundryPushPublisher.DescriptorImpl.DEFAULT_MEMORY;
+            logger.println("WARNING: Missing value for memory. Using default value: " + DescriptorImpl.DEFAULT_MEMORY);
+            memory = DescriptorImpl.DEFAULT_MEMORY;
         }
-        this.hostname = optionalManifest.hostname;
+        this.hostname = jenkinsConfig.hostname;
         if (hostname.equals("")) {
             logger.println("WARNING: Missing value for hostname. Using app name: " + appName);
             hostname = appName;
         }
 
-        this.instances = optionalManifest.instances;
+        this.instances = jenkinsConfig.instances;
         if (instances == 0) {
-            instances = CloudFoundryPushPublisher.DescriptorImpl.DEFAULT_INSTANCES;
+            instances = DescriptorImpl.DEFAULT_INSTANCES;
         }
 
-        this.timeout = optionalManifest.timeout;
+        this.timeout = jenkinsConfig.timeout;
         if (timeout == 0) {
-            timeout = CloudFoundryPushPublisher.DescriptorImpl.DEFAULT_TIMEOUT;
+            timeout = DescriptorImpl.DEFAULT_TIMEOUT;
         }
 
         // noRoute's default value is already false, which is acceptable
-        this.noRoute = optionalManifest.noRoute;
+        this.noRoute = jenkinsConfig.noRoute;
 
-        this.domain = optionalManifest.domain;
+        this.domain = jenkinsConfig.domain;
         if (domain.equals("")) {
             domain = defaultDomain;
         }
 
         // These must be null, not just empty string
-        this.buildpack = optionalManifest.buildpack;
+        this.buildpack = jenkinsConfig.buildpack;
         if (buildpack.equals("")) {
             buildpack = null;
         }
-        this.command = optionalManifest.command;
+        this.command = jenkinsConfig.command;
         if (command.equals("")) {
             command = null;
         }
-        this.appPath = optionalManifest.appPath;
+        this.appPath = jenkinsConfig.appPath;
         if (appPath.equals("")) {
             appPath = ".";
         }
 
-        List<CloudFoundryPushPublisher.EnvironmentVariable> manifestEnvVars = optionalManifest.envVars;
+        List<EnvironmentVariable> manifestEnvVars = jenkinsConfig.envVars;
         if (manifestEnvVars != null) {
-            for (CloudFoundryPushPublisher.EnvironmentVariable var : manifestEnvVars) {
+            for (EnvironmentVariable var : manifestEnvVars) {
                 this.envVars.put(var.key, var.value);
             }
         }
 
-        List<CloudFoundryPushPublisher.ServiceName> manifestServicesNames = optionalManifest.servicesNames;
+        List<ServiceName> manifestServicesNames = jenkinsConfig.servicesNames;
         if (manifestServicesNames != null) {
-            for (CloudFoundryPushPublisher.ServiceName service : manifestServicesNames) {
+            for (ServiceName service : manifestServicesNames) {
                 this.servicesNames.add(service.name);
             }
         }

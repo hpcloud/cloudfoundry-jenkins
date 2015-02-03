@@ -97,7 +97,8 @@ public class CloudFoundryPushPublisher extends Recorder {
                 }
             } else {
                 // Read Jenkins configuration
-                allDeploymentInfo.add(new DeploymentInfo(listener.getLogger(), optionalManifest, jenkinsBuildName, domain));
+                allDeploymentInfo.add(
+                        new DeploymentInfo(listener.getLogger(), optionalManifest, jenkinsBuildName, domain));
             }
 
             boolean success = true;
@@ -131,8 +132,8 @@ public class CloudFoundryPushPublisher extends Recorder {
         }
     }
 
-    private boolean processOneApp(DeploymentInfo deploymentInfo, AbstractBuild build, BuildListener listener, URL targetUrl)
-            throws IOException, InterruptedException {
+    private boolean processOneApp(DeploymentInfo deploymentInfo, AbstractBuild build, BuildListener listener,
+                                  URL targetUrl) throws IOException, InterruptedException {
         try {
             String appName = deploymentInfo.getAppName();
             String appURI = "https://" + deploymentInfo.getHostname() + "." + deploymentInfo.getDomain();
@@ -162,37 +163,12 @@ public class CloudFoundryPushPublisher extends Recorder {
 
             listener.getLogger().println("Pushing " + appName + " app to " + target);
 
-            // Check if app already exists
-            List<CloudApplication> existingApps = client.getApplications();
-            boolean createNewApp = true;
-            for (CloudApplication app : existingApps) {
-                if (app.getName().equals(appName)) {
-                    if (resetIfExists) {
-                        listener.getLogger().println("App already exists, resetting.");
-                        client.deleteApplication(appName);
-                        listener.getLogger().println("App deleted.");
-                    } else {
-                        createNewApp = false;
-                        listener.getLogger().println("App already exists, skipping creation.");
-                    }
-                    break;
-                }
-            }
-
             // This is where we would create services, if we decide to add that feature.
             // List<CloudService> cloudServices = deploymentInfo.getServices();
             // client.createService();
 
-            // Create app if it doesn't exist
-            if (createNewApp) {
-                listener.getLogger().println("Creating new app.");
-                Staging staging = new Staging(deploymentInfo.getCommand(), deploymentInfo.getBuildpack(),
-                        null, deploymentInfo.getTimeout());
-                List<String> uris = new ArrayList<String>();
-                uris.add(appURI);
-                List<String> services = deploymentInfo.getServicesNames();
-                client.createApplication(appName, staging, deploymentInfo.getMemory(), uris, services);
-            }
+            // Create app if it doesn't already exist, or if resetIfExists parameter is true
+            boolean createdNewApp = createApplicationIfNeeded(client, listener, deploymentInfo, appURI);
 
             // Delete route if no-route parameter
             if (deploymentInfo.isNoRoute()) {
@@ -211,47 +187,11 @@ public class CloudFoundryPushPublisher extends Recorder {
 
             // Push files
             listener.getLogger().println("Pushing app bits.");
-            FilePath appPath = new FilePath(build.getWorkspace(), deploymentInfo.getAppPath());
-
-            if (appPath.getChannel() != Jenkins.MasterComputer.localChannel) {
-                if (appPath.isDirectory()) {
-                    // The build is distributed, and a directory
-                    // We need to make a copy of the target directory on the master
-                    File appFile = File.createTempFile("appFile", null); // This is on the master
-                    appFile.deleteOnExit();
-                    OutputStream outputStream = new FileOutputStream(appFile);
-                    appPath.zip(outputStream);
-
-                    // We now have a zip file on the master, extract it into a directory
-                    ZipFile appZipFile = new ZipFile(appFile);
-                    File outputDirectory = new File(appFile.getAbsolutePath().split("\\.")[0]);
-                    outputDirectory.deleteOnExit();
-                    appZipFile.extractAll(outputDirectory.getAbsolutePath());
-                    // appPath.zip() creates a top level directory that we want to remove
-                    File[] listFiles = outputDirectory.listFiles();
-                    if (listFiles != null && listFiles.length == 1) {
-                        outputDirectory = listFiles[0];
-                    } else {
-                        // This should never happen because appPath.zip() always makes a directory
-                        throw new IllegalStateException("Unzipped output directory was empty.");
-                    }
-                    // We can now use outputDirectory which is a copy of the target directory but on master
-                    client.uploadApplication(appName, outputDirectory);
-
-                } else {
-                    // If the target path is a single file, we can just use an InputStream
-                    // The CF client will make a temp file on the master from the InputStream
-                    client.uploadApplication(appName, appPath.getName(), appPath.read());
-                }
-            } else {
-                // If the build is not distributed, we can convert the FilePath to a File without problems
-                File targetFile = new File(appPath.toURI());
-                client.uploadApplication(appName, targetFile);
-            }
+            pushAppBits(build, deploymentInfo, client);
 
             // Start or restart application
             StartingInfo startingInfo;
-            if (createNewApp) {
+            if (createdNewApp) {
                 listener.getLogger().println("Starting application.");
                 startingInfo = client.startApplication(appName);
             } else {
@@ -260,27 +200,7 @@ public class CloudFoundryPushPublisher extends Recorder {
             }
 
             // Start printing the staging logs
-            // First, try streamLogs()
-            try {
-                JenkinsApplicationLogListener logListener = new JenkinsApplicationLogListener(listener);
-                client.streamLogs(appName, logListener);
-            } catch (Exception e) {
-                // In case of failure, try getStagingLogs()
-                listener.getLogger().println("WARNING: Exception occurred trying to get staging logs via websocket. " +
-                        "Switching to alternate method.");
-                int offset = 0;
-                String stagingLogs = client.getStagingLogs(startingInfo, offset);
-                if (stagingLogs == null) {
-                    listener.getLogger().println("WARNING: Could not get staging logs with alternate method. " +
-                            "Cannot display staging logs.");
-                } else {
-                    while (stagingLogs != null) {
-                        listener.getLogger().println(stagingLogs);
-                        offset += stagingLogs.length();
-                        stagingLogs = client.getStagingLogs(startingInfo, offset);
-                    }
-                }
-            }
+            printStagingLogs(client, listener, startingInfo, appName);
 
             CloudApplication app = client.getApplication(appName);
 
@@ -343,6 +263,106 @@ public class CloudFoundryPushPublisher extends Recorder {
         } catch (ZipException e) {
             listener.getLogger().println("ERROR: ZipException: " + e.getMessage());
             return false;
+        }
+    }
+
+    private boolean createApplicationIfNeeded(CloudFoundryClient client, BuildListener listener,
+                                              DeploymentInfo deploymentInfo, String appURI) {
+        // Check if app already exists
+        List<CloudApplication> existingApps = client.getApplications();
+        boolean createNewApp = true;
+        for (CloudApplication app : existingApps) {
+            if (app.getName().equals(deploymentInfo.getAppName())) {
+                if (resetIfExists) {
+                    listener.getLogger().println("App already exists, resetting.");
+                    client.deleteApplication(deploymentInfo.getAppName());
+                    listener.getLogger().println("App deleted.");
+                } else {
+                    createNewApp = false;
+                    listener.getLogger().println("App already exists, skipping creation.");
+                }
+                break;
+            }
+        }
+
+        // Create app if it doesn't exist
+        if (createNewApp) {
+            listener.getLogger().println("Creating new app.");
+            Staging staging = new Staging(deploymentInfo.getCommand(), deploymentInfo.getBuildpack(),
+                    null, deploymentInfo.getTimeout());
+            List<String> uris = new ArrayList<String>();
+            uris.add(appURI);
+            List<String> services = deploymentInfo.getServicesNames();
+            client.createApplication(deploymentInfo.getAppName(), staging, deploymentInfo.getMemory(), uris, services);
+        }
+
+        return createNewApp;
+    }
+
+    private void pushAppBits(AbstractBuild build, DeploymentInfo deploymentInfo, CloudFoundryClient client)
+            throws IOException, InterruptedException, ZipException {
+        FilePath appPath = new FilePath(build.getWorkspace(), deploymentInfo.getAppPath());
+
+        if (appPath.getChannel() != Jenkins.MasterComputer.localChannel) {
+            if (appPath.isDirectory()) {
+                // The build is distributed, and a directory
+                // We need to make a copy of the target directory on the master
+                File appFile = File.createTempFile("appFile", null); // This is on the master
+                appFile.deleteOnExit();
+                OutputStream outputStream = new FileOutputStream(appFile);
+                appPath.zip(outputStream);
+
+                // We now have a zip file on the master, extract it into a directory
+                ZipFile appZipFile = new ZipFile(appFile);
+                File outputDirectory = new File(appFile.getAbsolutePath().split("\\.")[0]);
+                outputDirectory.deleteOnExit();
+                appZipFile.extractAll(outputDirectory.getAbsolutePath());
+                // appPath.zip() creates a top level directory that we want to remove
+                File[] listFiles = outputDirectory.listFiles();
+                if (listFiles != null && listFiles.length == 1) {
+                    outputDirectory = listFiles[0];
+                } else {
+                    // This should never happen because appPath.zip() always makes a directory
+                    throw new IllegalStateException("Unzipped output directory was empty.");
+                }
+                // We can now use outputDirectory which is a copy of the target directory but on master
+                client.uploadApplication(deploymentInfo.getAppName(), outputDirectory);
+
+            } else {
+                // If the target path is a single file, we can just use an InputStream
+                // The CF client will make a temp file on the master from the InputStream
+                client.uploadApplication(deploymentInfo.getAppName(), appPath.getName(), appPath.read());
+
+            }
+        } else {
+            // If the build is not distributed, we can convert the FilePath to a File without problems
+            File targetFile = new File(appPath.toURI());
+            client.uploadApplication(deploymentInfo.getAppName(), targetFile);
+        }
+    }
+
+    private void printStagingLogs(CloudFoundryClient client, BuildListener listener,
+                                  StartingInfo startingInfo, String appName) {
+        // First, try streamLogs()
+        try {
+            JenkinsApplicationLogListener logListener = new JenkinsApplicationLogListener(listener);
+            client.streamLogs(appName, logListener);
+        } catch (Exception e) {
+            // In case of failure, try getStagingLogs()
+            listener.getLogger().println("WARNING: Exception occurred trying to get staging logs via websocket. " +
+                    "Switching to alternate method.");
+            int offset = 0;
+            String stagingLogs = client.getStagingLogs(startingInfo, offset);
+            if (stagingLogs == null) {
+                listener.getLogger().println("WARNING: Could not get staging logs with alternate method. " +
+                        "Cannot display staging logs.");
+            } else {
+                while (stagingLogs != null) {
+                    listener.getLogger().println(stagingLogs);
+                    offset += stagingLogs.length();
+                    stagingLogs = client.getStagingLogs(startingInfo, offset);
+                }
+            }
         }
     }
 
@@ -488,8 +508,8 @@ public class CloudFoundryPushPublisher extends Recorder {
                         new CloudCredentials(credentials.getUsername(), Secret.toString(credentials.getPassword()));
                 HttpProxyConfiguration proxyConfig = buildProxyConfiguration(targetUrl);
 
-                CloudFoundryClient client = new CloudFoundryClient(cloudCredentials, targetUrl, organization, cloudSpace,
-                        proxyConfig, selfSigned);
+                CloudFoundryClient client = new CloudFoundryClient(cloudCredentials, targetUrl, organization,
+                        cloudSpace, proxyConfig, selfSigned);
                 client.login();
                 client.getCloudInfo();
                 if (targetUrl.getHost().startsWith("api.")) {
