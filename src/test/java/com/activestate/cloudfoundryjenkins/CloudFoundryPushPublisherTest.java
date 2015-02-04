@@ -275,7 +275,6 @@ public class CloudFoundryPushPublisherTest {
         System.out.println(content1);
         assertTrue("hello-java-1 did not send back correct text", content1.contains("Hello from"));
         assertEquals(200, client.getApplication("hello-java-1").getMemory());
-
         String uri2 = appUris.get(1);
         Request request2 = Request.Get(uri2);
         HttpResponse response2 = request2.execute().returnResponse();
@@ -285,6 +284,36 @@ public class CloudFoundryPushPublisherTest {
         System.out.println(content2);
         assertTrue("hello-java-2 did not send back correct text", content2.contains("Hello from"));
         assertEquals(300, client.getApplication("hello-java-2").getMemory());
+    }
+
+    @Test
+    public void testPerformCustomManifestFileLocation() throws Exception {
+        FreeStyleProject project = j.createFreeStyleProject();
+        project.setScm(new ExtractResourceSCM(getClass().getResource("hello-java-custom-manifest-location.zip")));
+
+        ManifestChoice manifestChoice = new ManifestChoice("manifestFile", "manifest/manifest.yml",
+                null, 0, null, 0, 0, false, null, null, null, null, null, null);
+        CloudFoundryPushPublisher cf = new CloudFoundryPushPublisher(TEST_TARGET, TEST_ORG, TEST_SPACE,
+                "testCredentialsId", false, false, manifestChoice);
+        project.getPublishersList().add(cf);
+        FreeStyleBuild build = project.scheduleBuild2(0).get();
+        System.out.println(build.getDisplayName() + " completed");
+
+        String log = FileUtils.readFileToString(build.getLogFile());
+        System.out.println(log);
+
+        assertTrue("Build did not succeed", build.getResult().isBetterOrEqualTo(Result.SUCCESS));
+        assertTrue("Build did not display staging logs", log.contains("Downloaded app package"));
+
+        System.out.println("App URI : " + cf.getAppURIs().get(0));
+        String uri = cf.getAppURIs().get(0);
+        Request request = Request.Get(uri);
+        HttpResponse response = request.execute().returnResponse();
+        int statusCode = response.getStatusLine().getStatusCode();
+        assertEquals("Get request did not respond 200 OK", 200, statusCode);
+        String content = EntityUtils.toString(response.getEntity());
+        System.out.println(content);
+        assertTrue("App did not send back correct text", content.contains("Hello from"));
     }
 
     // All the tests below are failure cases
