@@ -58,6 +58,9 @@ public class CloudFoundryPushPublisher extends Recorder {
 
     private List<String> appURIs = new ArrayList<String>();
 
+    /**
+     * The constructor is databound from the Jenkins config page, which is defined in config.jelly.
+     */
     @DataBoundConstructor
     public CloudFoundryPushPublisher(String target, String organization, String cloudSpace,
                                      String credentialsId, boolean selfSigned,
@@ -75,6 +78,9 @@ public class CloudFoundryPushPublisher extends Recorder {
         }
     }
 
+    /**
+     * This is the main method, which gets called when the plugin must run as part of a build.
+     */
     @Override
     public boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener) {
         // We don't want to push if the build failed
@@ -397,22 +403,30 @@ public class CloudFoundryPushPublisher extends Recorder {
         this.appURIs.add(appURI);
     }
 
+    /**
+     * This class contains the choice of using either a manifest file or the optional Jenkins configuration.
+     * It also contains all the variables of either choice, which will be non-null only if their choice was selected.
+     * It bothers me that a single class has these multiple uses, but everything is contained in the radioBlock tags
+     * in config.jelly and must be databound to a single class. It doesn't seem like there is an alternative.
+     */
     public static class ManifestChoice {
+        // This should only be either "manifestFile" or "jenkinsConfig"
         public final String value;
+
+        // Variable of the choice "manifestFile". Will be null if 'value' is "jenkinsConfig".
         public final String manifestFile;
 
+        // Variables of the choice "jenkinsConfig". Will all be null (or 0 or false) if 'value' is "manifestFile".
         public final String appName;
         public final int memory;
         public final String hostname;
         public final int instances;
         public final int timeout;
-
         public final boolean noRoute;
         public final String appPath;
         public final String buildpack;
         public final String command;
         public final String domain;
-
         public final List<EnvironmentVariable> envVars;
         public final List<ServiceName> servicesNames;
 
@@ -494,6 +508,9 @@ public class CloudFoundryPushPublisher extends Recorder {
             return "Push to Cloud Foundry";
         }
 
+        /**
+         * This method is called to populate the credentials list on the Jenkins config page.
+         */
         @SuppressWarnings("unused")
         public ListBoxModel doFillCredentialsIdItems(@AncestorInPath ItemGroup context,
                                                      @QueryParameter("target") final String target) {
@@ -510,6 +527,9 @@ public class CloudFoundryPushPublisher extends Recorder {
             return result;
         }
 
+        /**
+         * This method is called when the "Test Connection" button is clicked on the Jenkins config page.
+         */
         @SuppressWarnings("unused")
         public FormValidation doTestConnection(@AncestorInPath ItemGroup context,
                                                @QueryParameter("target") final String target,

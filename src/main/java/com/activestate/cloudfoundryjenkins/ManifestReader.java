@@ -14,6 +14,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Parses a manifest file into a map.
+ * This class is only in charge of creating a raw Map of everything contained in the manifest file,
+ * separated into applications. It does not take care of default or missing values.
+ */
 public class ManifestReader {
 
 
@@ -26,11 +31,8 @@ public class ManifestReader {
     }
 
     /**
-     * Returns a DeploymentInfo object containing all the information of a single app
+     * Returns a raw Map containing all the information of a single app
      * that was in the manifest file, including the global information applicable.
-     *
-     * @param appName the application name
-     * @return the deployment info
      */
     public Map<String, Object> getApplicationInfo(String appName) throws ManifestParsingException {
         Map<String, Object> result = getApplicationMap(appName);
@@ -42,9 +44,7 @@ public class ManifestReader {
     }
 
     /**
-     * Alias for getApplicationInfo(String appName) that returns info for the first app
-     *
-     * @return the deployment info
+     * Alias for getApplicationInfo(String appName) that returns info for the first app.
      */
     public Map<String, Object> getApplicationInfo() throws ManifestParsingException {
         return getApplicationMap(null);

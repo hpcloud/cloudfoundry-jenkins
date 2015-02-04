@@ -16,7 +16,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
+/**
+ * Contains all deployment info of a single application.
+ * The class is in charge of default values, and of reading from the Jenkins config if needed.
+ */
 public class DeploymentInfo {
 
     private String appName;
@@ -34,7 +37,8 @@ public class DeploymentInfo {
     private List<String> servicesNames = new ArrayList<String>();
 
     /**
-     * Constructor for reading the manifest.yml file
+     * Constructor for reading the manifest.yml file.
+     * Takes an appInfo Map that is created from a ManifestReader.
      */
     public DeploymentInfo(PrintStream logger, Map<String, Object> appInfo, String jenkinsBuildName,
                           String defaultDomain) throws IOException, ManifestParsingException, InterruptedException {
@@ -43,7 +47,7 @@ public class DeploymentInfo {
     }
 
     /**
-     * Constructor for reading the optional Jenkins config
+     * Constructor for reading the optional Jenkins config.
      */
     public DeploymentInfo(PrintStream logger, ManifestChoice optionalJenkinsConfig,
                           String jenkinsBuildName, String defaultDomain)
@@ -56,7 +60,6 @@ public class DeploymentInfo {
                                   String jenkinsBuildName, String defaultDomain) {
 
         // Important optional attributes, we should warn in case they are missing
-
         if (manifestJson == null) {
             manifestJson = new HashMap<String, Object>();
         }
