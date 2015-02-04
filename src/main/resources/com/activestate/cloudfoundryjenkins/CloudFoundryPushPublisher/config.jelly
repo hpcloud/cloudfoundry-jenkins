@@ -21,29 +21,37 @@
     <f:checkbox/>
   </f:entry>
 
-  <f:optionalBlock field="optionalManifest" title="Read app info from manifest.yml file"
-                   negative="true" checked="${instance.optionalManifest == null}">
+  <f:radioBlock title="Read configuration from a manifest file" name="manifestChoice" value="manifestFile"
+                checked="${instance.manifestChoice.value != 'jenkinsConfig'}">
+    <f:entry title="Manifest file" field="manifestFile">
+      <f:textbox value="${instance.manifestChoice.manifestFile}" default="manifest.yml"/>
+    </f:entry>
+  </f:radioBlock>
+
+  <f:radioBlock title="Enter configuration in Jenkins" name="manifestChoice" value="jenkinsConfig"
+                checked="${instance.manifestChoice.value == 'jenkinsConfig'}">
     <f:entry title="Application Name" field="appName">
-      <f:textbox value="${instance.optionalManifest.appName}" default="${it.displayName}"/>
+      <f:textbox value="${instance.manifestChoice.appName}" default="${it.displayName}"/>
     </f:entry>
     <f:entry title="Memory (MB)" field="memory">
-      <f:textbox value="${instance.optionalManifest.memory}" default="${descriptor.DEFAULT_MEMORY}"/>
+      <f:textbox value="${instance.manifestChoice.memory}" default="${descriptor.DEFAULT_MEMORY}"/>
     </f:entry>
     <f:entry title="Hostname" field="hostname">
-      <f:textbox value="${instance.optionalManifest.hostname}" default="${it.displayName}"/>
+      <f:textbox value="${instance.manifestChoice.hostname}" default="${it.displayName}"/>
     </f:entry>
     <f:entry title="Instances" field="instances">
-      <f:textbox value="${instance.optionalManifest.instances}" default="${descriptor.DEFAULT_INSTANCES}"/>
+      <f:textbox value="${instance.manifestChoice.instances}"
+                 default="${descriptor.DEFAULT_INSTANCES}"/>
     </f:entry>
     <f:entry title="Timeout (s)" field="timeout">
-      <f:textbox value="${instance.optionalManifest.timeout}" default="${descriptor.DEFAULT_TIMEOUT}"/>
+      <f:textbox value="${instance.manifestChoice.timeout}" default="${descriptor.DEFAULT_TIMEOUT}"/>
     </f:entry>
     <f:entry title="Custom buildpack" field="buildpack">
-      <f:textbox value="${instance.optionalManifest.buildpack}"/>
+      <f:textbox value="${instance.manifestChoice.buildpack}"/>
     </f:entry>
 
     <f:entry title="Environment Variables">
-      <f:repeatable var="envVars" items="${instance.optionalManifest.envVars}">
+      <f:repeatable var="envVars" items="${instance.manifestChoice.envVars}">
         <table width="100%">
           <f:entry title="Key" field="key">
             <f:textbox value="${envVars.key}"/>
@@ -59,7 +67,7 @@
     </f:entry>
 
     <f:entry title="Services">
-      <f:repeatable var="servicesNames" items="${instance.optionalManifest.servicesNames}">
+      <f:repeatable var="servicesNames" items="${instance.manifestChoice.servicesNames}">
         <table width="100%">
           <f:entry title="Name" field="name">
             <f:textbox value="${servicesNames.name}"/>
@@ -73,19 +81,19 @@
 
     <f:advanced>
       <f:entry title="Do not create a route" field="noRoute">
-        <f:checkbox checked="${instance.optionalManifest.noRoute}"/>
+        <f:checkbox checked="${instance.manifestChoice.noRoute}"/>
       </f:entry>
       <f:entry title="Application Path" field="appPath">
-        <f:textbox default="${instance.optionalManifest.appPath}"/>
+        <f:textbox default="${instance.manifestChoice.appPath}"/>
       </f:entry>
       <f:entry title="Start command" field="command">
-        <f:textbox default="${instance.optionalManifest.command}"/>
+        <f:textbox default="${instance.manifestChoice.command}"/>
       </f:entry>
       <f:entry title="Domain" field="domain">
-        <f:textbox default="${instance.optionalManifest.domain}"/>
+        <f:textbox default="${instance.manifestChoice.domain}"/>
       </f:entry>
     </f:advanced>
 
-  </f:optionalBlock>
+  </f:radioBlock>
 
 </j:jelly>

@@ -5,7 +5,7 @@
 package com.activestate.cloudfoundryjenkins;
 
 import com.activestate.cloudfoundryjenkins.CloudFoundryPushPublisher.EnvironmentVariable;
-import com.activestate.cloudfoundryjenkins.CloudFoundryPushPublisher.OptionalManifest;
+import com.activestate.cloudfoundryjenkins.CloudFoundryPushPublisher.ManifestChoice;
 import com.activestate.cloudfoundryjenkins.CloudFoundryPushPublisher.ServiceName;
 import com.cloudbees.plugins.credentials.CredentialsProvider;
 import com.cloudbees.plugins.credentials.CredentialsScope;
@@ -90,7 +90,7 @@ public class CloudFoundryPushPublisherTest {
         project.setScm(new ExtractResourceSCM(getClass().getResource("hello-java.zip")));
 
         CloudFoundryPushPublisher cf = new CloudFoundryPushPublisher(TEST_TARGET, TEST_ORG, TEST_SPACE,
-                "testCredentialsId", false, false, null);
+                "testCredentialsId", false, false, ManifestChoice.defaultManifestFileConfig());
         project.getPublishersList().add(cf);
         FreeStyleBuild build = project.scheduleBuild2(0).get();
         System.out.println(build.getDisplayName() + " completed");
@@ -113,11 +113,11 @@ public class CloudFoundryPushPublisherTest {
     }
 
     @Test
-    public void testPerformSimplePushOptionalManifest() throws Exception {
+    public void testPerformSimplePushJenkinsConfig() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
         project.setScm(new ExtractResourceSCM(getClass().getResource("hello-java.zip")));
-        OptionalManifest manifest =
-                new OptionalManifest("hello-java", 512, "", 0, 0, false,
+        ManifestChoice manifest =
+                new ManifestChoice("jenkinsConfig", null, "hello-java", 512, "", 0, 0, false,
                         "target/hello-java-1.0.war", "", "", "",
                         new ArrayList<EnvironmentVariable>(), new ArrayList<ServiceName>());
         CloudFoundryPushPublisher cf = new CloudFoundryPushPublisher(TEST_TARGET, TEST_ORG, TEST_SPACE,
@@ -148,8 +148,8 @@ public class CloudFoundryPushPublisherTest {
     public void testPerformResetIfExists() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
         project.setScm(new ExtractResourceSCM(getClass().getResource("hello-java.zip")));
-        OptionalManifest manifest1 =
-                new OptionalManifest("hello-java", 512, "", 0, 0, false,
+        ManifestChoice manifest1 =
+                new ManifestChoice("jenkinsConfig", null, "hello-java", 512, "", 0, 0, false,
                         "target/hello-java-1.0.war", "", "", "",
                         new ArrayList<EnvironmentVariable>(), new ArrayList<ServiceName>());
         CloudFoundryPushPublisher cf1 = new CloudFoundryPushPublisher(TEST_TARGET, TEST_ORG, TEST_SPACE,
@@ -167,8 +167,8 @@ public class CloudFoundryPushPublisherTest {
 
         project.getPublishersList().remove(cf1);
 
-        OptionalManifest manifest2 =
-                new OptionalManifest("hello-java", 256, "", 0, 0, false,
+        ManifestChoice manifest2 =
+                new ManifestChoice("jenkinsConfig", null, "hello-java", 256, "", 0, 0, false,
                         "target/hello-java-1.0.war", "", "", "",
                         new ArrayList<EnvironmentVariable>(), new ArrayList<ServiceName>());
         CloudFoundryPushPublisher cf2 = new CloudFoundryPushPublisher(TEST_TARGET, TEST_ORG, TEST_SPACE,
@@ -188,8 +188,8 @@ public class CloudFoundryPushPublisherTest {
     public void testPerformMultipleInstances() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
         project.setScm(new ExtractResourceSCM(getClass().getResource("hello-java.zip")));
-        OptionalManifest manifest =
-                new OptionalManifest("hello-java", 64, "", 4, 0, false,
+        ManifestChoice manifest =
+                new ManifestChoice("jenkinsConfig", null, "hello-java", 64, "", 4, 0, false,
                         "target/hello-java-1.0.war", "", "", "",
                         new ArrayList<EnvironmentVariable>(), new ArrayList<ServiceName>());
         CloudFoundryPushPublisher cf = new CloudFoundryPushPublisher(TEST_TARGET, TEST_ORG, TEST_SPACE,
@@ -220,8 +220,8 @@ public class CloudFoundryPushPublisherTest {
     public void testPerformCustomBuildpack() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
         project.setScm(new ExtractResourceSCM(getClass().getResource("heroku-node-js-sample.zip")));
-        OptionalManifest manifest =
-                new OptionalManifest("heroku-node-js-sample", 512, "", 1, 60, false, "",
+        ManifestChoice manifest =
+                new ManifestChoice("jenkinsConfig", null, "heroku-node-js-sample", 512, "", 1, 60, false, "",
                         "https://github.com/heroku/heroku-buildpack-nodejs", "", "",
                         new ArrayList<EnvironmentVariable>(), new ArrayList<ServiceName>());
         CloudFoundryPushPublisher cf = new CloudFoundryPushPublisher(TEST_TARGET, TEST_ORG, TEST_SPACE,
@@ -252,7 +252,7 @@ public class CloudFoundryPushPublisherTest {
         FreeStyleProject project = j.createFreeStyleProject();
         project.setScm(new ExtractResourceSCM(getClass().getResource("multi-hello-java.zip")));
         CloudFoundryPushPublisher cf = new CloudFoundryPushPublisher(TEST_TARGET, TEST_ORG, TEST_SPACE,
-                "testCredentialsId", false, false, null);
+                "testCredentialsId", false, false, ManifestChoice.defaultManifestFileConfig());
         project.getPublishersList().add(cf);
         FreeStyleBuild build = project.scheduleBuild2(0).get();
         System.out.println(build.getDisplayName() + " completed");
@@ -295,8 +295,8 @@ public class CloudFoundryPushPublisherTest {
         FreeStyleProject project = j.createFreeStyleProject();
 
         project.setScm(new ExtractResourceSCM(getClass().getResource("hello-java.zip")));
-        OptionalManifest manifest =
-                new OptionalManifest("hello-java", 512, "", 0, 1, false,
+        ManifestChoice manifest =
+                new ManifestChoice("jenkinsConfig", null, "hello-java", 512, "", 0, 1, false,
                         "target/hello-java-1.0.war", "", "", "",
                         new ArrayList<EnvironmentVariable>(), new ArrayList<ServiceName>());
         CloudFoundryPushPublisher cf = new CloudFoundryPushPublisher(TEST_TARGET, TEST_ORG, TEST_SPACE,
@@ -319,7 +319,7 @@ public class CloudFoundryPushPublisherTest {
         FreeStyleProject project = j.createFreeStyleProject();
         project.setScm(new ExtractResourceSCM(getClass().getResource("python-env.zip")));
         CloudFoundryPushPublisher cf = new CloudFoundryPushPublisher(TEST_TARGET, TEST_ORG, TEST_SPACE,
-                "testCredentialsId", false, false, null);
+                "testCredentialsId", false, false, ManifestChoice.defaultManifestFileConfig());
         project.getPublishersList().add(cf);
         FreeStyleBuild build = project.scheduleBuild2(0).get();
         System.out.println(build.getDisplayName() + " completed");
@@ -360,7 +360,7 @@ public class CloudFoundryPushPublisherTest {
         FreeStyleProject project = j.createFreeStyleProject();
         project.setScm(new ExtractResourceSCM(getClass().getResource("python-env-services.zip")));
         CloudFoundryPushPublisher cf = new CloudFoundryPushPublisher(TEST_TARGET, TEST_ORG, TEST_SPACE,
-                "testCredentialsId", false, false, null);
+                "testCredentialsId", false, false, ManifestChoice.defaultManifestFileConfig());
         project.getPublishersList().add(cf);
         FreeStyleBuild build = project.scheduleBuild2(0).get();
         System.out.println(build.getDisplayName() + " completed");
@@ -387,8 +387,8 @@ public class CloudFoundryPushPublisherTest {
     public void testPerformNoRoute() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
         project.setScm(new ExtractResourceSCM(getClass().getResource("hello-java.zip")));
-        OptionalManifest manifest =
-                new OptionalManifest("hello-java", 512, "", 0, 0, true,
+        ManifestChoice manifest =
+                new ManifestChoice("jenkinsConfig", null, "hello-java", 512, "", 0, 0, true,
                         "target/hello-java-1.0.war", "", "", "",
                         new ArrayList<EnvironmentVariable>(), new ArrayList<ServiceName>());
         CloudFoundryPushPublisher cf = new CloudFoundryPushPublisher(TEST_TARGET, TEST_ORG, TEST_SPACE,
@@ -438,7 +438,7 @@ public class CloudFoundryPushPublisherTest {
                 new UsernamePasswordCredentialsImpl(CredentialsScope.GLOBAL, "wrongCredentialsId", "",
                         "wrongName", "wrongPass"));
         CloudFoundryPushPublisher cf = new CloudFoundryPushPublisher(TEST_TARGET, TEST_ORG, TEST_SPACE,
-                "wrongCredentialsId", false, false, null);
+                "wrongCredentialsId", false, false, ManifestChoice.defaultManifestFileConfig());
         project.getPublishersList().add(cf);
         FreeStyleBuild build = project.scheduleBuild2(0).get();
         System.out.println(build.getDisplayName() + " completed");

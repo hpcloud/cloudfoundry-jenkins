@@ -5,7 +5,7 @@
 package com.activestate.cloudfoundryjenkins;
 
 import com.activestate.cloudfoundryjenkins.CloudFoundryPushPublisher.EnvironmentVariable;
-import com.activestate.cloudfoundryjenkins.CloudFoundryPushPublisher.OptionalManifest;
+import com.activestate.cloudfoundryjenkins.CloudFoundryPushPublisher.ManifestChoice;
 import com.activestate.cloudfoundryjenkins.CloudFoundryPushPublisher.ServiceName;
 import hudson.FilePath;
 import org.junit.Rule;
@@ -94,8 +94,8 @@ public class DeploymentInfoTest {
         services.add(new ServiceName("service_name_one"));
         services.add(new ServiceName("service_name_two"));
         services.add(new ServiceName("service_name_three"));
-        OptionalManifest jenkinsManifest =
-                new OptionalManifest("hello-java", 512, "testhost", 4, 42, true,
+        ManifestChoice jenkinsManifest =
+                new ManifestChoice("jenkinsConfig", null, "hello-java", 512, "testhost", 4, 42, true,
                         "target/hello-java-1.0.war",
                         "https://github.com/heroku/heroku-buildpack-hello",
                         "echo Hello", "testdomain.local", envVars, services);
@@ -128,8 +128,8 @@ public class DeploymentInfoTest {
 
     @Test
     public void testReadJenkinsConfigDefaultOptions() throws Exception {
-        OptionalManifest jenkinsManifest =
-                new OptionalManifest("", 0, "", 0, 0, false, "", "", "", "", null, null);
+        ManifestChoice jenkinsManifest =
+                new ManifestChoice("jenkinsConfig", null, "", 0, "", 0, 0, false, "", "", "", "", null, null);
         DeploymentInfo deploymentInfo =
                 new DeploymentInfo(System.out, jenkinsManifest, "jenkins-build-name", "domain-name");
 

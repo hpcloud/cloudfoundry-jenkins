@@ -54,21 +54,25 @@ public class CloudFoundryPushPublisher extends Recorder {
     public final String credentialsId;
     public final boolean selfSigned;
     public final boolean resetIfExists;
-    public final OptionalManifest optionalManifest;
+    public final ManifestChoice manifestChoice;
 
     private List<String> appURIs = new ArrayList<String>();
 
     @DataBoundConstructor
     public CloudFoundryPushPublisher(String target, String organization, String cloudSpace,
                                      String credentialsId, boolean selfSigned,
-                                     boolean resetIfExists, OptionalManifest optionalManifest) {
+                                     boolean resetIfExists, ManifestChoice manifestChoice) {
         this.target = target;
         this.organization = organization;
         this.cloudSpace = cloudSpace;
         this.credentialsId = credentialsId;
         this.selfSigned = selfSigned;
         this.resetIfExists = resetIfExists;
-        this.optionalManifest = optionalManifest;
+        if (manifestChoice == null || manifestChoice.value == null) {
+            this.manifestChoice = ManifestChoice.defaultManifestFileConfig();
+        } else {
+            this.manifestChoice = manifestChoice;
+        }
     }
 
     @Override
@@ -84,12 +88,11 @@ public class CloudFoundryPushPublisher extends Recorder {
             String[] split = target.split("\\.", 2);
             String domain = split[split.length - 1];
 
-            FilePath manifestFilePath = new FilePath(build.getWorkspace(), DEFAULT_MANIFEST_PATH);
-
             // Get all deployment info
             List<DeploymentInfo> allDeploymentInfo = new ArrayList<DeploymentInfo>();
-            if (optionalManifest == null) {
-                // Read manifest.yml
+            if (manifestChoice.value.equals("manifestFile")) {
+                // Read manifest file
+                FilePath manifestFilePath = new FilePath(build.getWorkspace(), manifestChoice.manifestFile);
                 ManifestReader manifestReader = new ManifestReader(manifestFilePath);
                 List<Map<String, Object>> appList = manifestReader.getApplicationList();
                 for (Map<String, Object> appInfo : appList) {
@@ -98,7 +101,7 @@ public class CloudFoundryPushPublisher extends Recorder {
             } else {
                 // Read Jenkins configuration
                 allDeploymentInfo.add(
-                        new DeploymentInfo(listener.getLogger(), optionalManifest, jenkinsBuildName, domain));
+                        new DeploymentInfo(listener.getLogger(), manifestChoice, jenkinsBuildName, domain));
             }
 
             boolean success = true;
@@ -394,7 +397,10 @@ public class CloudFoundryPushPublisher extends Recorder {
         this.appURIs.add(appURI);
     }
 
-    public static class OptionalManifest {
+    public static class ManifestChoice {
+        public final String value;
+        public final String manifestFile;
+
         public final String appName;
         public final int memory;
         public final String hostname;
@@ -412,9 +418,21 @@ public class CloudFoundryPushPublisher extends Recorder {
 
 
         @DataBoundConstructor
-        public OptionalManifest(String appName, int memory, String hostname, int instances, int timeout,
-                                boolean noRoute, String appPath, String buildpack, String command, String domain,
-                                List<EnvironmentVariable> envVars, List<ServiceName> servicesNames) {
+        public ManifestChoice(String value, String manifestFile,
+                              String appName, int memory, String hostname, int instances, int timeout,
+                              boolean noRoute, String appPath, String buildpack, String command, String domain,
+                              List<EnvironmentVariable> envVars, List<ServiceName> servicesNames) {
+            if (value == null) {
+                this.value = "manifestFile";
+            } else {
+                this.value = value;
+            }
+            if (manifestFile == null || manifestFile.isEmpty()) {
+                this.manifestFile = DEFAULT_MANIFEST_PATH;
+            } else {
+                this.manifestFile = manifestFile;
+            }
+
             this.appName = appName;
             this.memory = memory;
             this.hostname = hostname;
@@ -428,10 +446,18 @@ public class CloudFoundryPushPublisher extends Recorder {
             this.envVars = envVars;
             this.servicesNames = servicesNames;
         }
+
+        /**
+         * Constructs a ManifestChoice with the default settings for using a manifest file.
+         * This is mostly for easier unit tests.
+         */
+        public static ManifestChoice defaultManifestFileConfig() {
+            return new ManifestChoice("manifestFile", DEFAULT_MANIFEST_PATH,
+                    null, 0, null, 0, 0, false, null, null, null, null, null, null);
+        }
     }
 
     public static class EnvironmentVariable {
-
         public final String key;
         public final String value;
 
@@ -443,7 +469,6 @@ public class CloudFoundryPushPublisher extends Recorder {
     }
 
     public static class ServiceName {
-
         public final String name;
 
         @DataBoundConstructor
