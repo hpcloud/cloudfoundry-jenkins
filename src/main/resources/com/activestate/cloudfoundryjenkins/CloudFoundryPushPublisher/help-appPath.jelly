@@ -1,4 +1,5 @@
 <div>
   By default, everything in your project's root folder will be pushed. Use this to specify a different path (for
   example, a 'target' folder).
+  This path is relative to the workspace of your application, so there is no need to add ${WORKSPACE} before it.
 </div>

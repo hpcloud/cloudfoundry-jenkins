@@ -29,6 +29,7 @@ import net.lingala.zip4j.exception.ZipException;
 import org.cloudfoundry.client.lib.*;
 import org.cloudfoundry.client.lib.domain.*;
 import org.cloudfoundry.client.lib.org.springframework.web.client.ResourceAccessException;
+import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
@@ -102,12 +103,15 @@ public class CloudFoundryPushPublisher extends Recorder {
                 ManifestReader manifestReader = new ManifestReader(manifestFilePath);
                 List<Map<String, Object>> appList = manifestReader.getApplicationList();
                 for (Map<String, Object> appInfo : appList) {
-                    allDeploymentInfo.add(new DeploymentInfo(listener.getLogger(), appInfo, jenkinsBuildName, domain));
+                    allDeploymentInfo.add(
+                            new DeploymentInfo(build, listener, listener.getLogger(),
+                                    appInfo, jenkinsBuildName, domain));
                 }
             } else {
                 // Read Jenkins configuration
                 allDeploymentInfo.add(
-                        new DeploymentInfo(listener.getLogger(), manifestChoice, jenkinsBuildName, domain));
+                        new DeploymentInfo(build, listener, listener.getLogger(),
+                                manifestChoice, jenkinsBuildName, domain));
             }
 
             boolean success = true;
@@ -131,6 +135,9 @@ public class CloudFoundryPushPublisher extends Recorder {
             return false;
         } catch (ManifestParsingException e) {
             listener.getLogger().println("ERROR: Could not parse manifest: " + e.getMessage());
+            return false;
+        } catch (MacroEvaluationException e) {
+            listener.getLogger().println("ERROR: Could not parse token macro: " + e.getMessage());
             return false;
         } catch (IOException e) {
             listener.getLogger().println("ERROR: IOException: " + e.getMessage());

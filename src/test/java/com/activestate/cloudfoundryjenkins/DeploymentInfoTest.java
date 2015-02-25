@@ -8,9 +8,13 @@ import com.activestate.cloudfoundryjenkins.CloudFoundryPushPublisher.Environment
 import com.activestate.cloudfoundryjenkins.CloudFoundryPushPublisher.ManifestChoice;
 import com.activestate.cloudfoundryjenkins.CloudFoundryPushPublisher.ServiceName;
 import hudson.FilePath;
+import hudson.model.FreeStyleBuild;
+import hudson.model.FreeStyleProject;
+import hudson.model.TaskListener;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.jvnet.hudson.test.JenkinsRule;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -25,6 +29,9 @@ public class DeploymentInfoTest {
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
+
+    @Rule
+    public JenkinsRule j = new JenkinsRule();
 
     @Test
     public void testReadManifestFileAllOptions() throws Exception {
@@ -81,6 +88,22 @@ public class DeploymentInfoTest {
 
         assertTrue(deploymentInfo.getEnvVars().isEmpty());
         assertTrue(deploymentInfo.getServicesNames().isEmpty());
+    }
+
+    @Test
+    public void testReadManifestFileMacroTokens() throws Exception {
+        FreeStyleProject project = j.createFreeStyleProject();
+        FreeStyleBuild build = project.scheduleBuild2(0).get();
+        build.setDisplayName("test-build");
+        TaskListener listener = j.createTaskListener();
+        File manifestFile = new File(getClass().getResource("token-macro-manifest.yml").toURI());
+        FilePath manifestFilePath = new FilePath(manifestFile);
+        ManifestReader manifestReader = new ManifestReader(manifestFilePath);
+        Map<String, Object> appInfo = manifestReader.getApplicationInfo();
+        DeploymentInfo deploymentInfo =
+                new DeploymentInfo(build, listener, System.out, appInfo, "jenkins-build-name", "domain-name");
+
+        assertEquals("test-build", deploymentInfo.getAppName());
     }
 
 
@@ -146,5 +169,20 @@ public class DeploymentInfoTest {
 
         assertTrue(deploymentInfo.getEnvVars().isEmpty());
         assertTrue(deploymentInfo.getServicesNames().isEmpty());
+    }
+
+    @Test
+    public void testReadJenkinsConfigMacroTokens() throws Exception {
+        FreeStyleProject project = j.createFreeStyleProject();
+        FreeStyleBuild build = project.scheduleBuild2(0).get();
+        build.setDisplayName("test-build");
+        TaskListener listener = j.createTaskListener();
+        ManifestChoice jenkinsManifest =
+                new ManifestChoice("jenkinsConfig", null, "${BUILD_DISPLAY_NAME}",
+                        0, "", 0, 0, false, "", "", "", "", null, null);
+        DeploymentInfo deploymentInfo =
+                new DeploymentInfo(build, listener, System.out, jenkinsManifest, "jenkins-build-name", "domain-name");
+
+        assertEquals("test-build", deploymentInfo.getAppName());
     }
 }

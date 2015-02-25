@@ -8,6 +8,10 @@ import com.activestate.cloudfoundryjenkins.CloudFoundryPushPublisher.DescriptorI
 import com.activestate.cloudfoundryjenkins.CloudFoundryPushPublisher.EnvironmentVariable;
 import com.activestate.cloudfoundryjenkins.CloudFoundryPushPublisher.ManifestChoice;
 import com.activestate.cloudfoundryjenkins.CloudFoundryPushPublisher.ServiceName;
+import hudson.model.AbstractBuild;
+import hudson.model.TaskListener;
+import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
+import org.jenkinsci.plugins.tokenmacro.TokenMacro;
 
 import java.io.IOException;
 import java.io.PrintStream;
@@ -18,7 +22,8 @@ import java.util.Map;
 
 /**
  * Contains all deployment info of a single application.
- * The class is in charge of default values, and of reading from the Jenkins config if needed.
+ * The class is in charge of default values, of expanding token macros,
+ * and of reading from the Jenkins config if needed.
  */
 public class DeploymentInfo {
 
@@ -40,18 +45,41 @@ public class DeploymentInfo {
      * Constructor for reading the manifest.yml file.
      * Takes an appInfo Map that is created from a ManifestReader.
      */
-    public DeploymentInfo(PrintStream logger, Map<String, Object> appInfo, String jenkinsBuildName,
-                          String defaultDomain) throws IOException, ManifestParsingException, InterruptedException {
+    public DeploymentInfo(AbstractBuild build, TaskListener listener, PrintStream logger,
+                          Map<String, Object> appInfo, String jenkinsBuildName, String defaultDomain)
+            throws IOException, ManifestParsingException, InterruptedException, MacroEvaluationException {
 
         readManifestFile(logger, appInfo, jenkinsBuildName, defaultDomain);
+        expandTokenMacros(build, listener);
     }
 
     /**
      * Constructor for reading the optional Jenkins config.
      */
+    public DeploymentInfo(AbstractBuild build, TaskListener listener, PrintStream logger,
+                          ManifestChoice optionalJenkinsConfig, String jenkinsBuildName, String defaultDomain)
+            throws IOException, ManifestParsingException, InterruptedException, MacroEvaluationException {
+
+        readOptionalJenkinsConfig(logger, optionalJenkinsConfig, jenkinsBuildName, defaultDomain);
+        expandTokenMacros(build, listener);
+    }
+
+    /**
+     * Constructor for reading the manifest.yml file. (Without token expansion)
+     */
+    public DeploymentInfo(PrintStream logger, Map<String, Object> appInfo,
+                          String jenkinsBuildName, String defaultDomain)
+            throws IOException, ManifestParsingException, InterruptedException, MacroEvaluationException {
+
+        readManifestFile(logger, appInfo, jenkinsBuildName, defaultDomain);
+    }
+
+    /**
+     * Constructor for reading the optional Jenkins config. (Without token expansion)
+     */
     public DeploymentInfo(PrintStream logger, ManifestChoice optionalJenkinsConfig,
                           String jenkinsBuildName, String defaultDomain)
-            throws IOException, ManifestParsingException, InterruptedException {
+            throws IOException, ManifestParsingException, InterruptedException, MacroEvaluationException {
 
         readOptionalJenkinsConfig(logger, optionalJenkinsConfig, jenkinsBuildName, defaultDomain);
     }
@@ -208,6 +236,32 @@ public class DeploymentInfo {
                 this.servicesNames.add(service.name);
             }
         }
+    }
+
+    private void expandTokenMacros(AbstractBuild build, TaskListener listener)
+            throws InterruptedException, MacroEvaluationException, IOException {
+
+        this.appName = TokenMacro.expandAll(build, listener, this.appName);
+        this.hostname = TokenMacro.expandAll(build, listener, this.hostname);
+        this.appPath = TokenMacro.expandAll(build, listener, this.appPath);
+        this.buildpack = TokenMacro.expandAll(build, listener, this.buildpack);
+        this.command = TokenMacro.expandAll(build, listener, this.command);
+        this.domain = TokenMacro.expandAll(build, listener, this.domain);
+
+        Map<String, String> expandedEnvVars = new HashMap<String, String>();
+        for (String envVarName : this.envVars.keySet()) {
+            String expandedEnvVarName = TokenMacro.expandAll(build, listener, envVarName);
+            String expandedEnvVarValue = TokenMacro.expandAll(build, listener, this.envVars.get(envVarName));
+            expandedEnvVars.put(expandedEnvVarName, expandedEnvVarValue);
+        }
+        this.envVars = expandedEnvVars;
+
+        List<String> expandedServicesNames = new ArrayList<String>();
+        for (String serviceName : this.servicesNames) {
+            String expandedServiceName = TokenMacro.expandAll(build, listener, serviceName);
+            expandedServicesNames.add(expandedServiceName);
+        }
+        this.servicesNames = expandedServicesNames;
     }
 
     public String getAppName() {
