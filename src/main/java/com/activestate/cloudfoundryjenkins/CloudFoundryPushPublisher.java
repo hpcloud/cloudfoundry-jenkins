@@ -186,9 +186,9 @@ public class CloudFoundryPushPublisher extends Recorder {
             // Create app if it doesn't already exist, or if resetIfExists parameter is true
             boolean createdNewApp = createApplicationIfNeeded(client, listener, deploymentInfo, appURI);
 
-            // Delete route if no-route parameter
+            // Unbind all routes if no-route parameter is set
             if (deploymentInfo.isNoRoute()) {
-                client.deleteRoute(deploymentInfo.getHostname(), deploymentInfo.getDomain());
+                client.updateApplicationUris(appName, new ArrayList<String>());
             }
 
             // Add environment variables
@@ -307,7 +307,10 @@ public class CloudFoundryPushPublisher extends Recorder {
             Staging staging = new Staging(deploymentInfo.getCommand(), deploymentInfo.getBuildpack(),
                     null, deploymentInfo.getTimeout());
             List<String> uris = new ArrayList<String>();
-            uris.add(appURI);
+            // Pass an empty List as the uri list if no-route is set
+            if (!deploymentInfo.isNoRoute()) {
+                uris.add(appURI);
+            }
             List<String> services = deploymentInfo.getServicesNames();
             client.createApplication(deploymentInfo.getAppName(), staging, deploymentInfo.getMemory(), uris, services);
         }
