@@ -40,7 +40,7 @@ public class DeploymentInfoTest {
         ManifestReader manifestReader = new ManifestReader(manifestFilePath);
         Map<String, Object> appInfo = manifestReader.getApplicationInfo();
         DeploymentInfo deploymentInfo =
-                new DeploymentInfo(System.out, appInfo, "jenkins-build-name", "domain-name");
+                new DeploymentInfo(System.out, appInfo, "jenkins-build-name", "domain-name", "");
 
         assertEquals("hello-java", deploymentInfo.getAppName());
         assertEquals(512, deploymentInfo.getMemory());
@@ -73,7 +73,7 @@ public class DeploymentInfoTest {
         ManifestReader manifestReader = new ManifestReader(manifestFilePath);
         Map<String, Object> appInfo = manifestReader.getApplicationInfo();
         DeploymentInfo deploymentInfo =
-                new DeploymentInfo(System.out, appInfo, "jenkins-build-name", "domain-name");
+                new DeploymentInfo(System.out, appInfo, "jenkins-build-name", "domain-name", "");
 
         assertEquals("jenkins-build-name", deploymentInfo.getAppName());
         assertEquals(DEFAULT_MEMORY, deploymentInfo.getMemory());
@@ -82,7 +82,7 @@ public class DeploymentInfoTest {
         assertEquals(DEFAULT_TIMEOUT, deploymentInfo.getTimeout());
         assertEquals(false, deploymentInfo.isNoRoute());
         assertEquals("domain-name", deploymentInfo.getDomain());
-        assertEquals(".", deploymentInfo.getAppPath());
+        assertEquals("", deploymentInfo.getAppPath());
         assertNull(deploymentInfo.getBuildpack());
         assertNull(deploymentInfo.getCommand());
 
@@ -101,7 +101,7 @@ public class DeploymentInfoTest {
         ManifestReader manifestReader = new ManifestReader(manifestFilePath);
         Map<String, Object> appInfo = manifestReader.getApplicationInfo();
         DeploymentInfo deploymentInfo =
-                new DeploymentInfo(build, listener, System.out, appInfo, "jenkins-build-name", "domain-name");
+                new DeploymentInfo(build, listener, System.out, appInfo, "jenkins-build-name", "domain-name", "");
 
         assertEquals("test-build", deploymentInfo.getAppName());
     }
@@ -163,7 +163,7 @@ public class DeploymentInfoTest {
         assertEquals(DEFAULT_TIMEOUT, deploymentInfo.getTimeout());
         assertEquals(false, deploymentInfo.isNoRoute());
         assertEquals("domain-name", deploymentInfo.getDomain());
-        assertEquals(".", deploymentInfo.getAppPath());
+        assertEquals("", deploymentInfo.getAppPath());
         assertNull(deploymentInfo.getBuildpack());
         assertNull(deploymentInfo.getCommand());
 

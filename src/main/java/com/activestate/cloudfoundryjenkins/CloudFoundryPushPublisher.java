@@ -105,7 +105,7 @@ public class CloudFoundryPushPublisher extends Recorder {
                 for (Map<String, Object> appInfo : appList) {
                     allDeploymentInfo.add(
                             new DeploymentInfo(build, listener, listener.getLogger(),
-                                    appInfo, jenkinsBuildName, domain));
+                                    appInfo, jenkinsBuildName, domain, manifestChoice.manifestFile));
                 }
             } else {
                 // Read Jenkins configuration

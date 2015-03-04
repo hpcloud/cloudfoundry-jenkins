@@ -15,6 +15,8 @@ import org.jenkinsci.plugins.tokenmacro.TokenMacro;
 
 import java.io.IOException;
 import java.io.PrintStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -45,11 +47,11 @@ public class DeploymentInfo {
      * Constructor for reading the manifest.yml file.
      * Takes an appInfo Map that is created from a ManifestReader.
      */
-    public DeploymentInfo(AbstractBuild build, TaskListener listener, PrintStream logger,
-                          Map<String, Object> appInfo, String jenkinsBuildName, String defaultDomain)
+    public DeploymentInfo(AbstractBuild build, TaskListener listener, PrintStream logger, Map<String, Object> appInfo,
+                          String jenkinsBuildName, String defaultDomain, String manifestPath)
             throws IOException, ManifestParsingException, InterruptedException, MacroEvaluationException {
 
-        readManifestFile(logger, appInfo, jenkinsBuildName, defaultDomain);
+        readManifestFile(logger, appInfo, jenkinsBuildName, defaultDomain, manifestPath);
         expandTokenMacros(build, listener);
     }
 
@@ -68,10 +70,10 @@ public class DeploymentInfo {
      * Constructor for reading the manifest.yml file. (Without token expansion)
      */
     public DeploymentInfo(PrintStream logger, Map<String, Object> appInfo,
-                          String jenkinsBuildName, String defaultDomain)
+                          String jenkinsBuildName, String defaultDomain, String manifestPath)
             throws IOException, ManifestParsingException, InterruptedException, MacroEvaluationException {
 
-        readManifestFile(logger, appInfo, jenkinsBuildName, defaultDomain);
+        readManifestFile(logger, appInfo, jenkinsBuildName, defaultDomain, manifestPath);
     }
 
     /**
@@ -85,7 +87,7 @@ public class DeploymentInfo {
     }
 
     private void readManifestFile(PrintStream logger, Map<String, Object> manifestJson,
-                                  String jenkinsBuildName, String defaultDomain) {
+                                  String jenkinsBuildName, String defaultDomain, String manifestPath) {
 
         // Important optional attributes, we should warn in case they are missing
         if (manifestJson == null) {
@@ -142,9 +144,17 @@ public class DeploymentInfo {
 
         String appPath = (String) manifestJson.get("path");
         if (appPath == null) {
-            appPath = ".";
+            appPath = "";
         }
-        this.appPath = appPath;
+        // The path in manifest.yml is from the relative position of the manifest.yml file
+        // We need to transform it into a path relative to the workspace
+        Path sourcePath = Paths.get(manifestPath);
+        sourcePath = sourcePath.getParent();
+        if (sourcePath == null) {
+            sourcePath = Paths.get("");
+        }
+        Path targetPath = Paths.get(appPath);
+        this.appPath = sourcePath.resolve(targetPath).normalize().toString();
 
         // Optional attributes with no defaults, it's ok if those are null
         this.buildpack = (String) manifestJson.get("buildpack");
@@ -218,10 +228,9 @@ public class DeploymentInfo {
         if (command.equals("")) {
             command = null;
         }
-        this.appPath = jenkinsConfig.appPath;
-        if (appPath.equals("")) {
-            appPath = ".";
-        }
+
+        // Empty string is a correct default for appPath, we just need to normalize it
+        this.appPath = Paths.get(jenkinsConfig.appPath).normalize().toString();
 
         List<EnvironmentVariable> manifestEnvVars = jenkinsConfig.envVars;
         if (manifestEnvVars != null) {
