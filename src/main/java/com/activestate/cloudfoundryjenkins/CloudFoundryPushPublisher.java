@@ -28,6 +28,7 @@ import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 import org.cloudfoundry.client.lib.*;
 import org.cloudfoundry.client.lib.domain.*;
+import org.cloudfoundry.client.lib.org.springframework.core.ExceptionDepthComparator;
 import org.cloudfoundry.client.lib.org.springframework.web.client.ResourceAccessException;
 import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
 import org.kohsuke.stapler.AncestorInPath;
@@ -72,7 +73,7 @@ public class CloudFoundryPushPublisher extends Recorder {
         this.credentialsId = credentialsId;
         this.selfSigned = selfSigned;
         this.resetIfExists = resetIfExists;
-        if (manifestChoice == null || manifestChoice.value == null) {
+        if (manifestChoice == null) {
             this.manifestChoice = ManifestChoice.defaultManifestFileConfig();
         } else {
             this.manifestChoice = manifestChoice;
@@ -144,6 +145,9 @@ public class CloudFoundryPushPublisher extends Recorder {
             return false;
         } catch (InterruptedException e) {
             listener.getLogger().println("ERROR: InterruptedException: " + e.getMessage());
+            return false;
+        } catch (Exception e) {
+            e.printStackTrace(listener.getLogger());
             return false;
         }
     }
@@ -271,6 +275,7 @@ public class CloudFoundryPushPublisher extends Recorder {
                 if (e.getDescription() != null) {
                     listener.getLogger().println("ERROR: " + e.getDescription());
                 }
+                e.printStackTrace(listener.getLogger());
             }
             return false;
         } catch (FileNotFoundException e) {
