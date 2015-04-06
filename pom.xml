@@ -20,7 +20,7 @@
   <packaging>hpi</packaging>
 
   <name>Cloud Foundry Plugin</name>
-  <description>Pushes a project to Cloud Foundry at the end of a build</description>
+  <description>Pushes a project to Cloud Foundry or a CF-based platform (e.g. Stackato) at the end of a build.</description>
   <url>http://wiki.jenkins-ci.org/display/JENKINS/Cloud+Foundry+Plugin</url>
 
   <licenses>
