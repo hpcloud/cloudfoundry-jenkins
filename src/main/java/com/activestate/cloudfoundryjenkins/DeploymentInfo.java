@@ -151,7 +151,7 @@ public class DeploymentInfo {
         Path sourcePath = Paths.get(manifestPath);
         sourcePath = sourcePath.getParent();
         if (sourcePath == null) {
-            sourcePath = Paths.get("");
+            sourcePath = Paths.get(".");
         }
         Path targetPath = Paths.get(appPath);
         this.appPath = sourcePath.resolve(targetPath).normalize().toString();
@@ -229,8 +229,13 @@ public class DeploymentInfo {
             command = null;
         }
 
-        // Empty string is a correct default for appPath, we just need to normalize it
-        this.appPath = Paths.get(jenkinsConfig.appPath).normalize().toString();
+        // Paths.get("").normalize() causes a bug in some versions of Java
+        // Replace "" with "." to avoid the bug
+        String tempAppPath = jenkinsConfig.appPath;
+        if (tempAppPath.isEmpty()) {
+            tempAppPath = ".";
+        }
+        this.appPath = Paths.get(tempAppPath).normalize().toString();
 
         List<EnvironmentVariable> manifestEnvVars = jenkinsConfig.envVars;
         if (manifestEnvVars != null) {
