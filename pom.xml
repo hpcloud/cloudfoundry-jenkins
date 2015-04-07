@@ -34,8 +34,14 @@
   <dependencies>
     <dependency>
       <groupId>org.cloudfoundry</groupId>
-      <artifactId>cloudfoundry-client-lib-shaded</artifactId>
+      <artifactId>cloudfoundry-client-lib</artifactId>
       <version>1.0.6</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-core</artifactId>
+      <version>3.2.2.RELEASE</version>
     </dependency>
 
     <dependency>
@@ -70,6 +76,18 @@
     </dependency>
   </dependencies>
 
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.jenkins-ci.tools</groupId>
+        <artifactId>maven-hpi-plugin</artifactId>
+        <configuration>
+          <pluginFirstClassLoader>true</pluginFirstClassLoader>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
   <scm>
     <connection>scm:git:git://github.com/jenkinsci/cloudfoundry.git</connection>
     <developerConnection>scm:git:git@github.com:jenkinsci/cloudfoundry.git</developerConnection>
@@ -81,13 +99,6 @@
     <repository>
       <id>repo.jenkins-ci.org</id>
       <url>http://repo.jenkins-ci.org/public/</url>
-    </repository>
-    <!-- A CF Java client shaded library is pre-installed in a local repository
-         to allow building the project in a single 'mvn clean install'.
-         See README.md for more details. -->
-    <repository>
-      <id>Local repository</id>
-      <url>file://${basedir}/lib</url>
     </repository>
   </repositories>
 
