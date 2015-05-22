@@ -63,4 +63,5 @@ tag locally (and maybe on the remote) and reset to the latest commit.
 
 The new version should appear [on this page](http://repo.jenkins-ci.org/releases/org/jenkins-ci/plugins/cloudfoundry/)
 immediately, otherwise it means the release failed. If it worked, the new version will be available on Jenkins after
-~12h.
+~12h. You will see the new version [on this page](http://updates.jenkins-ci.org/update-center.json) once it is available
+to download.
