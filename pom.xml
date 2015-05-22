@@ -38,10 +38,21 @@
       <version>1.0.6</version>
     </dependency>
 
+    <!--
+     spring-core and tomcat-embed-websocket are already dependencies of cloudfoundry-client-lib
+     but we specify them anyway because want them to override the Jenkins dependencies
+     (via the pluginFirstClassLoader option)
+    -->
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-core</artifactId>
       <version>3.2.2.RELEASE</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.tomcat.embed</groupId>
+      <artifactId>tomcat-embed-websocket</artifactId>
+      <version>8.0.15</version>
     </dependency>
 
     <dependency>
