@@ -28,7 +28,7 @@ import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 import org.cloudfoundry.client.lib.*;
 import org.cloudfoundry.client.lib.domain.*;
-import org.springframework.web.client.ResourceAccessException;
+import org.cloudfoundry.client.lib.org.springframework.web.client.ResourceAccessException;
 import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
