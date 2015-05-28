@@ -29,6 +29,7 @@ import net.lingala.zip4j.exception.ZipException;
 import org.cloudfoundry.client.lib.*;
 import org.cloudfoundry.client.lib.domain.*;
 import org.cloudfoundry.client.lib.org.springframework.web.client.ResourceAccessException;
+import org.cloudfoundry.client.lib.rest.CloudControllerClient;
 import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -90,10 +91,31 @@ public class CloudFoundryPushPublisher extends Recorder {
 
         try {
             String jenkinsBuildName = build.getProject().getDisplayName();
-
             URL targetUrl = new URL(target);
-            String[] split = target.split("\\.", 2);
-            String domain = split[split.length - 1];
+
+            List<StandardUsernamePasswordCredentials> standardCredentials = CredentialsProvider.lookupCredentials(
+                    StandardUsernamePasswordCredentials.class,
+                    build.getProject(),
+                    ACL.SYSTEM,
+                    URIRequirementBuilder.fromUri(target).build());
+//
+            StandardUsernamePasswordCredentials credentials =
+                    CredentialsMatchers.firstOrNull(standardCredentials, CredentialsMatchers.withId(credentialsId));
+
+            if (credentials == null) {
+                listener.getLogger().println("ERROR: No credentials have been given.");
+                return false;
+            }
+
+            CloudCredentials cloudCredentials =
+                    new CloudCredentials(credentials.getUsername(), Secret.toString(credentials.getPassword()));
+            HttpProxyConfiguration proxyConfig = buildProxyConfiguration(targetUrl);
+
+            CloudFoundryClient client = new CloudFoundryClient(cloudCredentials, targetUrl, organization, cloudSpace,
+                    proxyConfig, selfSigned);
+            client.login();
+
+            String domain = client.getDefaultDomain().getName();
 
             // Get all deployment info
             List<DeploymentInfo> allDeploymentInfo = new ArrayList<DeploymentInfo>();
@@ -116,7 +138,7 @@ public class CloudFoundryPushPublisher extends Recorder {
 
             boolean success = true;
             for (DeploymentInfo deploymentInfo : allDeploymentInfo) {
-                boolean lastSuccess = processOneApp(deploymentInfo, build, listener, targetUrl);
+                boolean lastSuccess = processOneApp(client, deploymentInfo, build, listener, targetUrl);
                 // If an app fails, the build status is failure, but we should still try pushing them
                 success = success && lastSuccess;
             }
@@ -131,6 +153,18 @@ public class CloudFoundryPushPublisher extends Recorder {
                 listener.getLogger().println("ERROR: Certificate is not verified: " + e.getMessage());
             } else {
                 listener.getLogger().println("ERROR: Unknown ResourceAccessException: " + e.getMessage());
+            }
+            return false;
+        } catch (CloudFoundryException e) {
+            if (e.getMessage().equals("403 Access token denied.")) {
+                listener.getLogger().println("ERROR: Wrong username or password: " + e.getMessage());
+            } else {
+                listener.getLogger().println("ERROR: Unknown CloudFoundryException: " + e.getMessage());
+                listener.getLogger().println("ERROR: Cloud Foundry error code: " + e.getCloudFoundryErrorCode());
+                if (e.getDescription() != null) {
+                    listener.getLogger().println("ERROR: " + e.getDescription());
+                }
+                e.printStackTrace(listener.getLogger());
             }
             return false;
         } catch (ManifestParsingException e) {
@@ -151,34 +185,12 @@ public class CloudFoundryPushPublisher extends Recorder {
         }
     }
 
-    private boolean processOneApp(DeploymentInfo deploymentInfo, AbstractBuild build, BuildListener listener,
-                                  URL targetUrl) throws IOException, InterruptedException {
+    private boolean processOneApp(CloudFoundryClient client, DeploymentInfo deploymentInfo, AbstractBuild build,
+                                  BuildListener listener, URL targetUrl) throws IOException, InterruptedException {
         try {
             String appName = deploymentInfo.getAppName();
             String appURI = "https://" + deploymentInfo.getHostname() + "." + deploymentInfo.getDomain();
             addToAppURIs(appURI);
-
-            List<StandardUsernamePasswordCredentials> standardCredentials = CredentialsProvider.lookupCredentials(
-                    StandardUsernamePasswordCredentials.class,
-                    build.getProject(),
-                    ACL.SYSTEM,
-                    URIRequirementBuilder.fromUri(appURI).build());
-
-            StandardUsernamePasswordCredentials credentials =
-                    CredentialsMatchers.firstOrNull(standardCredentials, CredentialsMatchers.withId(credentialsId));
-
-            if (credentials == null) {
-                listener.getLogger().println("ERROR: No credentials have been given.");
-                return false;
-            }
-
-            CloudCredentials cloudCredentials =
-                    new CloudCredentials(credentials.getUsername(), Secret.toString(credentials.getPassword()));
-            HttpProxyConfiguration proxyConfig = buildProxyConfiguration(targetUrl);
-
-            CloudFoundryClient client = new CloudFoundryClient(cloudCredentials, targetUrl, organization, cloudSpace,
-                    proxyConfig, selfSigned);
-            client.login();
 
             listener.getLogger().println("Pushing " + appName + " app to " + target);
 
@@ -266,16 +278,12 @@ public class CloudFoundryPushPublisher extends Recorder {
                 return false;
             }
         } catch (CloudFoundryException e) {
-            if (e.getMessage().equals("403 Access token denied.")) {
-                listener.getLogger().println("ERROR: Wrong username or password: " + e.getMessage());
-            } else {
-                listener.getLogger().println("ERROR: Unknown CloudFoundryException: " + e.getMessage());
-                listener.getLogger().println("ERROR: Cloud Foundry error code: " + e.getCloudFoundryErrorCode());
-                if (e.getDescription() != null) {
-                    listener.getLogger().println("ERROR: " + e.getDescription());
-                }
-                e.printStackTrace(listener.getLogger());
+            listener.getLogger().println("ERROR: Unknown CloudFoundryException: " + e.getMessage());
+            listener.getLogger().println("ERROR: Cloud Foundry error code: " + e.getCloudFoundryErrorCode());
+            if (e.getDescription() != null) {
+                listener.getLogger().println("ERROR: " + e.getDescription());
             }
+            e.printStackTrace(listener.getLogger());
             return false;
         } catch (FileNotFoundException e) {
             listener.getLogger().println("ERROR: Could not find file: " + e.getMessage());
