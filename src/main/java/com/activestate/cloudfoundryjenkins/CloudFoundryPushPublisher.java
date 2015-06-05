@@ -29,7 +29,6 @@ import net.lingala.zip4j.exception.ZipException;
 import org.cloudfoundry.client.lib.*;
 import org.cloudfoundry.client.lib.domain.*;
 import org.cloudfoundry.client.lib.org.springframework.web.client.ResourceAccessException;
-import org.cloudfoundry.client.lib.rest.CloudControllerClient;
 import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -98,7 +97,7 @@ public class CloudFoundryPushPublisher extends Recorder {
                     build.getProject(),
                     ACL.SYSTEM,
                     URIRequirementBuilder.fromUri(target).build());
-//
+
             StandardUsernamePasswordCredentials credentials =
                     CredentialsMatchers.firstOrNull(standardCredentials, CredentialsMatchers.withId(credentialsId));
 
@@ -138,7 +137,7 @@ public class CloudFoundryPushPublisher extends Recorder {
 
             boolean success = true;
             for (DeploymentInfo deploymentInfo : allDeploymentInfo) {
-                boolean lastSuccess = processOneApp(client, deploymentInfo, build, listener, targetUrl);
+                boolean lastSuccess = processOneApp(client, deploymentInfo, build, listener);
                 // If an app fails, the build status is failure, but we should still try pushing them
                 success = success && lastSuccess;
             }
@@ -186,7 +185,7 @@ public class CloudFoundryPushPublisher extends Recorder {
     }
 
     private boolean processOneApp(CloudFoundryClient client, DeploymentInfo deploymentInfo, AbstractBuild build,
-                                  BuildListener listener, URL targetUrl) throws IOException, InterruptedException {
+                                  BuildListener listener) throws IOException, InterruptedException {
         try {
             String appName = deploymentInfo.getAppName();
             String appURI = "https://" + deploymentInfo.getHostname() + "." + deploymentInfo.getDomain();
