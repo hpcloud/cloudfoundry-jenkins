@@ -55,6 +55,7 @@ public class CloudFoundryPushPublisher extends Recorder {
     public final String credentialsId;
     public final boolean selfSigned;
     public final boolean resetIfExists;
+    public final List<Service> servicesToCreate;
     public final ManifestChoice manifestChoice;
 
     private List<String> appURIs = new ArrayList<String>();
@@ -65,13 +66,15 @@ public class CloudFoundryPushPublisher extends Recorder {
     @DataBoundConstructor
     public CloudFoundryPushPublisher(String target, String organization, String cloudSpace,
                                      String credentialsId, boolean selfSigned,
-                                     boolean resetIfExists, ManifestChoice manifestChoice) {
+                                     boolean resetIfExists, List<Service> servicesToCreate,
+                                     ManifestChoice manifestChoice) {
         this.target = target;
         this.organization = organization;
         this.cloudSpace = cloudSpace;
         this.credentialsId = credentialsId;
         this.selfSigned = selfSigned;
         this.resetIfExists = resetIfExists;
+        this.servicesToCreate = servicesToCreate;
         if (manifestChoice == null) {
             this.manifestChoice = ManifestChoice.defaultManifestFileConfig();
         } else {
@@ -87,6 +90,8 @@ public class CloudFoundryPushPublisher extends Recorder {
         // We don't want to push if the build failed
         if (build.getResult().isWorseThan(Result.SUCCESS))
             return true;
+
+        listener.getLogger().println("Cloud Foundry Plugin:");
 
         try {
             String jenkinsBuildName = build.getProject().getDisplayName();
@@ -115,6 +120,26 @@ public class CloudFoundryPushPublisher extends Recorder {
             client.login();
 
             String domain = client.getDefaultDomain().getName();
+
+
+            // Create services before push
+            List<CloudService> currentServicesList = client.getServices();
+            List<String> currentServicesNames = new ArrayList<String>();
+            for(CloudService currentService : currentServicesList) {
+                currentServicesNames.add(currentService.getName());
+            }
+            for(Service service : servicesToCreate) {
+                if (!currentServicesNames.contains(service.name)) {
+                    listener.getLogger().println("Creating service " + service.name);
+                    CloudService cloudService = new CloudService();
+                    cloudService.setName(service.name);
+                    cloudService.setLabel(service.type);
+                    cloudService.setPlan(service.plan);
+                    client.createService(cloudService);
+                } else {
+                    listener.getLogger().println("Service " + service.name + " already exists, skipping creation.");
+                }
+            }
 
             // Get all deployment info
             List<DeploymentInfo> allDeploymentInfo = new ArrayList<DeploymentInfo>();
@@ -192,10 +217,6 @@ public class CloudFoundryPushPublisher extends Recorder {
             addToAppURIs(appURI);
 
             listener.getLogger().println("Pushing " + appName + " app to " + target);
-
-            // This is where we would create services, if we decide to add that feature.
-            // List<CloudService> cloudServices = deploymentInfo.getServices();
-            // client.createService();
 
             // Create app if it doesn't already exist, or if resetIfExists parameter is true
             boolean createdNewApp = createApplicationIfNeeded(client, listener, deploymentInfo, appURI);
@@ -503,12 +524,27 @@ public class CloudFoundryPushPublisher extends Recorder {
         }
     }
 
+    // This class is for services to bind to the app. We only get the name of the service.
     public static class ServiceName {
         public final String name;
 
         @DataBoundConstructor
         public ServiceName(String name) {
             this.name = name;
+        }
+    }
+
+    // This class is for services to create. We need name, type and plan for this.
+    public static class Service {
+        public final String name;
+        public final String type;
+        public final String plan;
+
+        @DataBoundConstructor
+        public Service(String name, String type, String plan) {
+            this.name = name;
+            this.type = type;
+            this.plan = plan;
         }
     }
 

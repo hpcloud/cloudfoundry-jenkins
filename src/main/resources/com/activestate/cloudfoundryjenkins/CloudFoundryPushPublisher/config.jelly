@@ -21,6 +21,25 @@
     <f:checkbox/>
   </f:entry>
 
+  <f:entry title="Create services before pushing">
+    <f:repeatable var="servicesToCreate" items="${instance.servicesToCreate}">
+      <table width="100%">
+        <f:entry title="Name" field="name">
+          <f:textbox value="${servicesToCreate.name}"/>
+        </f:entry>
+        <f:entry title="Type" field="type">
+          <f:textbox value="${servicesToCreate.type}"/>
+        </f:entry>
+        <f:entry title="Plan" field="plan">
+          <f:textbox value="${servicesToCreate.plan}"/>
+        </f:entry>
+      </table>
+      <div align="right">
+        <f:repeatableDeleteButton/>
+      </div>
+    </f:repeatable>
+  </f:entry>
+
   <f:radioBlock title="Read configuration from a manifest file" name="manifestChoice" value="manifestFile"
                 checked="${instance.manifestChoice.value != 'jenkinsConfig'}">
     <f:entry title="Manifest file" field="manifestFile">
