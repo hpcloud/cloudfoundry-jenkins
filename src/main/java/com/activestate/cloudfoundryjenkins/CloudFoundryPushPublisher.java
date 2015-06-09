@@ -74,7 +74,11 @@ public class CloudFoundryPushPublisher extends Recorder {
         this.credentialsId = credentialsId;
         this.selfSigned = selfSigned;
         this.resetIfExists = resetIfExists;
-        this.servicesToCreate = servicesToCreate;
+        if (servicesToCreate == null) {
+            this.servicesToCreate = new ArrayList<Service>();
+        } else {
+            this.servicesToCreate = servicesToCreate;
+        }
         if (manifestChoice == null) {
             this.manifestChoice = ManifestChoice.defaultManifestFileConfig();
         } else {
@@ -125,7 +129,7 @@ public class CloudFoundryPushPublisher extends Recorder {
             // Create services before push
             List<CloudService> currentServicesList = client.getServices();
             List<String> currentServicesNames = new ArrayList<String>();
-            for(CloudService currentService : currentServicesList) {
+            for (CloudService currentService : currentServicesList) {
                 currentServicesNames.add(currentService.getName());
             }
             for(Service service : servicesToCreate) {
