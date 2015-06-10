@@ -132,16 +132,26 @@ public class CloudFoundryPushPublisher extends Recorder {
             for (CloudService currentService : currentServicesList) {
                 currentServicesNames.add(currentService.getName());
             }
-            for(Service service : servicesToCreate) {
-                if (!currentServicesNames.contains(service.name)) {
+
+            for (Service service : servicesToCreate) {
+                boolean createService = true;
+                if (currentServicesNames.contains(service.name)) {
+                    if (service.resetService) {
+                        listener.getLogger().println("Service " + service.name + " already exists, resetting.");
+                        client.deleteService(service.name);
+                        listener.getLogger().println("Service deleted.");
+                    } else {
+                        createService = false;
+                        listener.getLogger().println("Service " + service.name + " already exists, skipping creation.");
+                    }
+                }
+                if (createService) {
                     listener.getLogger().println("Creating service " + service.name);
                     CloudService cloudService = new CloudService();
                     cloudService.setName(service.name);
                     cloudService.setLabel(service.type);
                     cloudService.setPlan(service.plan);
                     client.createService(cloudService);
-                } else {
-                    listener.getLogger().println("Service " + service.name + " already exists, skipping creation.");
                 }
             }
 
@@ -543,12 +553,14 @@ public class CloudFoundryPushPublisher extends Recorder {
         public final String name;
         public final String type;
         public final String plan;
+        public final boolean resetService;
 
         @DataBoundConstructor
-        public Service(String name, String type, String plan) {
+        public Service(String name, String type, String plan, boolean resetService) {
             this.name = name;
             this.type = type;
             this.plan = plan;
+            this.resetService = resetService;
         }
     }
 

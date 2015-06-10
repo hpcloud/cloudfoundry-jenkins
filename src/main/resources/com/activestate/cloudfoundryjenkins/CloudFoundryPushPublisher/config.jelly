@@ -33,6 +33,9 @@
         <f:entry title="Plan" field="plan">
           <f:textbox value="${servicesToCreate.plan}"/>
         </f:entry>
+        <f:entry title="Reset service if already exists" field="resetService">
+          <f:checkbox checked="${servicesToCreate.resetService}"/>
+        </f:entry>
       </table>
       <div align="right">
         <f:repeatableDeleteButton/>
