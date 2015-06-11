@@ -21,7 +21,7 @@
     <f:checkbox/>
   </f:entry>
 
-  <f:entry title="Create services before pushing">
+  <f:entry title="Create services before pushing" field="createServices">
     <f:repeatable var="servicesToCreate" items="${instance.servicesToCreate}">
       <table width="100%">
         <f:entry title="Name" field="name">
