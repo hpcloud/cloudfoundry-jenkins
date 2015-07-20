@@ -252,7 +252,7 @@ public class CloudFoundryPushPublisher extends Recorder {
 
             // Push files
             listener.getLogger().println("Pushing app bits.");
-            pushAppBits(build, deploymentInfo, client);
+            pushAppBits(build, listener, deploymentInfo, client);
 
             // Start or restart application
             StartingInfo startingInfo;
@@ -364,7 +364,8 @@ public class CloudFoundryPushPublisher extends Recorder {
         return createNewApp;
     }
 
-    private void pushAppBits(AbstractBuild build, DeploymentInfo deploymentInfo, CloudFoundryClient client)
+    private void pushAppBits(AbstractBuild build, BuildListener listener, DeploymentInfo deploymentInfo,
+                             CloudFoundryClient client)
             throws IOException, InterruptedException, ZipException {
         FilePath appPath = new FilePath(build.getWorkspace(), deploymentInfo.getAppPath());
 
@@ -372,26 +373,29 @@ public class CloudFoundryPushPublisher extends Recorder {
             if (appPath.isDirectory()) {
                 // The build is distributed, and a directory
                 // We need to make a copy of the target directory on the master
-                File appFile = File.createTempFile("appFile", null); // This is on the master
-                appFile.deleteOnExit();
-                OutputStream outputStream = new FileOutputStream(appFile);
+                File tempAppFile = File.createTempFile("appFile", null); // This is on the master
+                OutputStream outputStream = new FileOutputStream(tempAppFile);
                 appPath.zip(outputStream);
 
                 // We now have a zip file on the master, extract it into a directory
-                ZipFile appZipFile = new ZipFile(appFile);
-                File outputDirectory = new File(appFile.getAbsolutePath().split("\\.")[0]);
-                outputDirectory.deleteOnExit();
-                appZipFile.extractAll(outputDirectory.getAbsolutePath());
+                ZipFile appZipFile = new ZipFile(tempAppFile);
+                File tempOutputDirectory = new File(tempAppFile.getAbsolutePath().split("\\.")[0]);
+                appZipFile.extractAll(tempOutputDirectory.getAbsolutePath());
                 // appPath.zip() creates a top level directory that we want to remove
-                File[] listFiles = outputDirectory.listFiles();
+                File[] listFiles = tempOutputDirectory.listFiles();
                 if (listFiles != null && listFiles.length == 1) {
-                    outputDirectory = listFiles[0];
+                    tempOutputDirectory = listFiles[0];
                 } else {
                     // This should never happen because appPath.zip() always makes a directory
                     throw new IllegalStateException("Unzipped output directory was empty.");
                 }
                 // We can now use outputDirectory which is a copy of the target directory but on master
-                client.uploadApplication(deploymentInfo.getAppName(), outputDirectory);
+                client.uploadApplication(deploymentInfo.getAppName(), tempOutputDirectory);
+                // Delete temporary files
+                boolean deleted = tempAppFile.delete() && tempOutputDirectory.delete();
+                if (!deleted) {
+                    listener.getLogger().println("WARNING: Temporary files were not deleted successfully.");
+                }
 
             } else {
                 // If the target path is a single file, we can just use an InputStream
