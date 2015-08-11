@@ -49,14 +49,14 @@ public class CloudFoundryPushPublisher extends Recorder {
     private static final String DEFAULT_MANIFEST_PATH = "manifest.yml";
     private static final int TIMEOUT = 120;
 
-    public final String target;
-    public final String organization;
-    public final String cloudSpace;
-    public final String credentialsId;
-    public final boolean selfSigned;
-    public final boolean resetIfExists;
-    public final List<Service> servicesToCreate;
-    public final ManifestChoice manifestChoice;
+    public String target;
+    public String organization;
+    public String cloudSpace;
+    public String credentialsId;
+    public boolean selfSigned;
+    public boolean resetIfExists;
+    public List<Service> servicesToCreate;
+    public ManifestChoice manifestChoice;
 
     private List<String> appURIs = new ArrayList<String>();
 
@@ -389,7 +389,7 @@ public class CloudFoundryPushPublisher extends Recorder {
                     // This should never happen because appPath.zip() always makes a directory
                     throw new IllegalStateException("Unzipped output directory was empty.");
                 }
-                // We can now use outputDirectory which is a copy of the target directory but on master
+                // We can now use tempOutputDirectory which is a copy of the target directory but on master
                 client.uploadApplication(deploymentInfo.getAppName(), tempOutputDirectory);
                 // Delete temporary files
                 boolean deleted = tempAppFile.delete() && tempOutputDirectory.delete();
@@ -725,5 +725,17 @@ public class CloudFoundryPushPublisher extends Recorder {
         public FormValidation doCheckHostname(@QueryParameter String value) {
             return FormValidation.validateRequired(value);
         }
+    }
+
+    /**
+     * This method is called after a plugin upgrade, to convert an old configuration into a new one.
+     * See: https://wiki.jenkins-ci.org/display/JENKINS/Hint+on+retaining+backward+compatibility
+     */
+    @SuppressWarnings("unused")
+    private Object readResolve() {
+        if (servicesToCreate == null) { // Introduced in 1.4
+            this.servicesToCreate = new ArrayList<Service>();
+        }
+        return this;
     }
 }
