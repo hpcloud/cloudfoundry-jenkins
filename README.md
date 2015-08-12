@@ -20,7 +20,7 @@ The command that was used to install the library to the local Maven repository i
 
 ```
 mvn org.apache.maven.plugins:maven-install-plugin:2.5.1:install-file \
--Dfile=cloudfoundry-client-lib-shaded-1.0.6.jar \
+-Dfile=cloudfoundry-client-lib-shaded-1.1.3.jar \
 -DlocalRepositoryPath=lib
 ```
 
