@@ -16,7 +16,7 @@
   </parent>
 
   <artifactId>cloudfoundry</artifactId>
-  <version>1.4.2-SNAPSHOT</version>
+  <version>1.4.2</version>
   <packaging>hpi</packaging>
 
   <name>Cloud Foundry Plugin</name>
@@ -75,7 +75,7 @@
     <connection>scm:git:git://github.com/jenkinsci/cloudfoundry.git</connection>
     <developerConnection>scm:git:git@github.com:jenkinsci/cloudfoundry.git</developerConnection>
     <url>http://github.com/jenkinsci/cloudfoundry</url>
-    <tag>HEAD</tag>
+    <tag>cloudfoundry-1.4.2</tag>
   </scm>
 
   <repositories>
