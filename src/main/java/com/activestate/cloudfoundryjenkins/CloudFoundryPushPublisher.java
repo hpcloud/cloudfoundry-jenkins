@@ -205,6 +205,9 @@ public class CloudFoundryPushPublisher extends Recorder {
                 e.printStackTrace(listener.getLogger());
             }
             return false;
+        } catch (CloudOperationException e) {
+            listener.getLogger().println("ERROR: Target returned an error: " + e.getMessage());
+            return false;
         } catch (ManifestParsingException e) {
             listener.getLogger().println("ERROR: Could not parse manifest: " + e.getMessage());
             return false;
