@@ -79,6 +79,7 @@ public class DeploymentInfoTest {
         assertEquals(DEFAULT_MEMORY, deploymentInfo.getMemory());
         assertEquals("jenkins-build-name", deploymentInfo.getHostname());
         assertEquals(DEFAULT_INSTANCES, deploymentInfo.getInstances());
+        assertEquals(DEFAULT_STACK, deploymentInfo.getStack());
         assertEquals(DEFAULT_TIMEOUT, deploymentInfo.getTimeout());
         assertEquals(false, deploymentInfo.isNoRoute());
         assertEquals("domain-name", deploymentInfo.getDomain());
@@ -134,6 +135,7 @@ public class DeploymentInfoTest {
         assertEquals("testdomain.local", deploymentInfo.getDomain());
         assertEquals("target" + File.separator + "hello-java-1.0.war", deploymentInfo.getAppPath());
         assertEquals("https://github.com/heroku/heroku-buildpack-hello", deploymentInfo.getBuildpack());
+        assertEquals("customstack", deploymentInfo.getStack());
         assertEquals("echo Hello", deploymentInfo.getCommand());
 
         Map<String, String> expectedEnvs = new HashMap<String, String>();
