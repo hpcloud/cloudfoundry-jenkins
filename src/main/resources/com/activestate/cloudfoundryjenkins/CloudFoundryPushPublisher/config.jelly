@@ -19,7 +19,7 @@
                     with="target,username,password,credentialsId,organization,cloudSpace,selfSigned"/>
   <f:entry title="Cutover method">
     <f:radioBlock title="Deploy and halt if app already exists" name="cutoverMethod" value="deploy" checked="${instance.cutoverMethod == 'deploy'}" />
-    <f:radioBlock title="Redeploy and reset existing app" name="cutoverMethod" value="Redeploy" checked="${instance.cutoverMethod == 'redeploy'}" />
+    <f:radioBlock title="Redeploy and reset existing app" name="cutoverMethod" value="redeploy" checked="${instance.cutoverMethod == 'redeploy'}" />
     <f:radioBlock title="Deploy and reroute to new app (blue/green)" name="cutoverMethod" value="reroute" checked="${instance.cutoverMethod == 'reroute'}" />
   </f:entry>
   <f:entry title="Create services before pushing" field="createServices">
