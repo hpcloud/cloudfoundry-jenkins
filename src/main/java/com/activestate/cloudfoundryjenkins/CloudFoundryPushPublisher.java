@@ -54,7 +54,7 @@ public class CloudFoundryPushPublisher extends Recorder {
     public String cloudSpace;
     public String credentialsId;
     public boolean selfSigned;
-    public boolean resetIfExists;
+    public cutoverMethod cutoverMethod;
     public List<Service> servicesToCreate;
     public ManifestChoice manifestChoice;
 
@@ -73,7 +73,11 @@ public class CloudFoundryPushPublisher extends Recorder {
         this.cloudSpace = cloudSpace;
         this.credentialsId = credentialsId;
         this.selfSigned = selfSigned;
-        this.resetIfExists = resetIfExists;
+        if (cutoverMethod == null) {
+            this.cutoverMethod = CutoverMethod.defaultCutoverMethod();
+        } else {
+            this.cutoverMethod = cutoverMethod;
+        }
         if (servicesToCreate == null) {
             this.servicesToCreate = new ArrayList<Service>();
         } else {
@@ -235,7 +239,7 @@ public class CloudFoundryPushPublisher extends Recorder {
 
             listener.getLogger().println("Pushing " + appName + " app to " + target);
 
-            // Create app if it doesn't already exist, or if resetIfExists parameter is true
+            // Create app depending on cutoverMethod parameter
             boolean createdNewApp = createApplicationIfNeeded(client, listener, deploymentInfo, appURI);
 
             // Unbind all routes if no-route parameter is set
@@ -338,13 +342,24 @@ public class CloudFoundryPushPublisher extends Recorder {
         boolean createNewApp = true;
         for (CloudApplication app : existingApps) {
             if (app.getName().equals(deploymentInfo.getAppName())) {
-                if (resetIfExists) {
-                    listener.getLogger().println("App already exists, resetting.");
-                    client.deleteApplication(deploymentInfo.getAppName());
-                    listener.getLogger().println("App deleted.");
-                } else {
-                    createNewApp = false;
-                    listener.getLogger().println("App already exists, skipping creation.");
+               switch (cutoverMethod.toLowerCase()) {
+                    // Redeploy and reset existing app
+                    case "redeploy":  
+                       listener.getLogger().println("App already exists, resetting.");
+                       client.deleteApplication(deploymentInfo.getAppName());
+                       listener.getLogger().println("App deleted.");
+                     break;
+
+                    // Deploy and reroute to new app (blue/green)
+                    case "reroute":  
+                       listener.getLogger().println("App already exists, deploying new instance.");
+
+                    break;
+                    // Deploy and halt if app already exists
+                    default: 
+                       createNewApp = false;
+                       listener.getLogger().println("App already exists, skipping creation.");
+                    break;
                 }
                 break;
             }
