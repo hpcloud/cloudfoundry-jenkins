@@ -54,7 +54,7 @@ public class CloudFoundryPushPublisher extends Recorder {
     public String cloudSpace;
     public String credentialsId;
     public boolean selfSigned;
-    public cutoverMethod cutoverMethod;
+    public String cutoverMethod;
     public List<Service> servicesToCreate;
     public ManifestChoice manifestChoice;
 
@@ -74,8 +74,16 @@ public class CloudFoundryPushPublisher extends Recorder {
         this.credentialsId = credentialsId;
         this.selfSigned = selfSigned;
         this.cutoverMethod = cutoverMethod;
-        this.servicesToCreate = servicesToCreate == null ? new ArrayList<Service>() : servicesToCreate;
-        this.manifestChoice = manifestChoice == null ? ManifestChoice.defaultManifestFileConfig() : manifestChoice;
+        if (servicesToCreate == null) {
+            this.servicesToCreate = new ArrayList<Service>();
+        } else {
+            this.servicesToCreate = servicesToCreate;
+        }
+        if (manifestChoice == null) {
+            this.manifestChoice = ManifestChoice.defaultManifestFileConfig();
+        } else {
+            this.manifestChoice = manifestChoice;
+        }
     }
 
     /**
