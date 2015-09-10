@@ -328,6 +328,9 @@ public class CloudFoundryPushPublisher extends Recorder {
         } catch (ZipException e) {
             listener.getLogger().println("ERROR: ZipException: " + e.getMessage());
             return false;
+        } catch (IllegalArgumentException e) {
+            listener.getLogger().println("ERROR: IllegalArgumentException: " + e.getMessage());
+            return false;
         }
     }
 
@@ -353,6 +356,10 @@ public class CloudFoundryPushPublisher extends Recorder {
         // Create app if it doesn't exist
         if (createNewApp) {
             listener.getLogger().println("Creating new app.");
+            String stack = deploymentInfo.getStack();
+            if (client.getStack(stack) == null) {
+                throw new IllegalArgumentException("Stack " + stack + " does not exist on the target.");
+            }
             Staging staging = new Staging(deploymentInfo.getCommand(), deploymentInfo.getBuildpack(),
                     deploymentInfo.getStack(), deploymentInfo.getTimeout());
             List<String> uris = new ArrayList<String>();
