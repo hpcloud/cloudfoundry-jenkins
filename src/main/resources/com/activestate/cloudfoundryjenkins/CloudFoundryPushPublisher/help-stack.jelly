@@ -1,0 +1,4 @@
+<div>
+  If your application requires a custom stack, you can use this to specify its name. Leave empty to use the
+  default stack of the target.
+</div>

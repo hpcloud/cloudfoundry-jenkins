@@ -218,6 +218,11 @@ public class DeploymentInfo {
             timeout = DescriptorImpl.DEFAULT_TIMEOUT;
         }
 
+        this.stack = jenkinsConfig.stack;
+        if (stack.equals("")) {
+            stack = DescriptorImpl.DEFAULT_STACK;
+        }
+
         // noRoute's default value is already false, which is acceptable
         this.noRoute = jenkinsConfig.noRoute;
 

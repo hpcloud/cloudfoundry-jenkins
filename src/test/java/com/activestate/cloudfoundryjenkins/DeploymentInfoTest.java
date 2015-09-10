@@ -51,6 +51,7 @@ public class DeploymentInfoTest {
         assertEquals("testdomain.local", deploymentInfo.getDomain());
         assertEquals("target" + File.separator + "hello-java-1.0.war", deploymentInfo.getAppPath());
         assertEquals("https://github.com/heroku/heroku-buildpack-hello", deploymentInfo.getBuildpack());
+        assertEquals("customstack", deploymentInfo.getStack());
         assertEquals("echo Hello", deploymentInfo.getCommand());
 
         Map<String, String> expectedEnvs = new HashMap<String, String>();
@@ -121,7 +122,7 @@ public class DeploymentInfoTest {
         ManifestChoice jenkinsManifest =
                 new ManifestChoice("jenkinsConfig", null, "hello-java", 512, "testhost", 4, 42, true,
                         "target/hello-java-1.0.war",
-                        "https://github.com/heroku/heroku-buildpack-hello",
+                        "https://github.com/heroku/heroku-buildpack-hello", "customstack",
                         "echo Hello", "testdomain.local", envVars, services);
         DeploymentInfo deploymentInfo =
                 new DeploymentInfo(System.out, jenkinsManifest, "jenkins-build-name", "domain-name");
@@ -154,7 +155,7 @@ public class DeploymentInfoTest {
     @Test
     public void testReadJenkinsConfigDefaultOptions() throws Exception {
         ManifestChoice jenkinsManifest =
-                new ManifestChoice("jenkinsConfig", null, "", 0, "", 0, 0, false, "", "", "", "", null, null);
+                new ManifestChoice("jenkinsConfig", null, "", 0, "", 0, 0, false, "", "", "", "", "", null, null);
         DeploymentInfo deploymentInfo =
                 new DeploymentInfo(System.out, jenkinsManifest, "jenkins-build-name", "domain-name");
 
@@ -163,6 +164,7 @@ public class DeploymentInfoTest {
         assertEquals("jenkins-build-name", deploymentInfo.getHostname());
         assertEquals(DEFAULT_INSTANCES, deploymentInfo.getInstances());
         assertEquals(DEFAULT_TIMEOUT, deploymentInfo.getTimeout());
+        assertEquals(DEFAULT_STACK, deploymentInfo.getStack());
         assertEquals(false, deploymentInfo.isNoRoute());
         assertEquals("domain-name", deploymentInfo.getDomain());
         assertEquals("", deploymentInfo.getAppPath());
@@ -181,7 +183,7 @@ public class DeploymentInfoTest {
         TaskListener listener = j.createTaskListener();
         ManifestChoice jenkinsManifest =
                 new ManifestChoice("jenkinsConfig", null, "${BUILD_DISPLAY_NAME}",
-                        0, "", 0, 0, false, "", "", "", "", null, null);
+                        0, "", 0, 0, false, "", "", "", "", "", null, null);
         DeploymentInfo deploymentInfo =
                 new DeploymentInfo(build, listener, System.out, jenkinsManifest, "jenkins-build-name", "domain-name");
 

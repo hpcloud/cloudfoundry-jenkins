@@ -488,6 +488,7 @@ public class CloudFoundryPushPublisher extends Recorder {
         public final boolean noRoute;
         public final String appPath;
         public final String buildpack;
+        public final String stack;
         public final String command;
         public final String domain;
         public final List<EnvironmentVariable> envVars;
@@ -496,8 +497,8 @@ public class CloudFoundryPushPublisher extends Recorder {
 
         @DataBoundConstructor
         public ManifestChoice(String value, String manifestFile,
-                              String appName, int memory, String hostname, int instances, int timeout,
-                              boolean noRoute, String appPath, String buildpack, String command, String domain,
+                              String appName, int memory, String hostname, int instances, int timeout, boolean noRoute,
+                              String appPath, String buildpack, String stack, String command, String domain,
                               List<EnvironmentVariable> envVars, List<ServiceName> servicesNames) {
             if (value == null) {
                 this.value = "manifestFile";
@@ -518,6 +519,7 @@ public class CloudFoundryPushPublisher extends Recorder {
             this.noRoute = noRoute;
             this.appPath = appPath;
             this.buildpack = buildpack;
+            this.stack = stack;
             this.command = command;
             this.domain = domain;
             this.envVars = envVars;
@@ -530,7 +532,7 @@ public class CloudFoundryPushPublisher extends Recorder {
          */
         public static ManifestChoice defaultManifestFileConfig() {
             return new ManifestChoice("manifestFile", DEFAULT_MANIFEST_PATH,
-                    null, 0, null, 0, 0, false, null, null, null, null, null, null);
+                    null, 0, null, 0, 0, false, null, null, null, null, null, null, null);
         }
     }
 

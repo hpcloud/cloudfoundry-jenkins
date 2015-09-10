@@ -71,6 +71,9 @@
     <f:entry title="Custom buildpack" field="buildpack">
       <f:textbox value="${instance.manifestChoice.buildpack}"/>
     </f:entry>
+    <f:entry title="Custom stack" field="stack">
+      <f:textbox value="${instance.manifestChoice.stack}"/>
+    </f:entry>
 
     <f:entry title="Environment Variables">
       <f:repeatable var="envVars" items="${instance.manifestChoice.envVars}">
