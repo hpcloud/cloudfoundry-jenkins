@@ -7,6 +7,9 @@ configuration of a manifest.yml file, or write your settings in the Jenkins buil
 **For usage information and changelog, see the
 [Jenkins Wiki page](https://wiki.jenkins-ci.org/display/JENKINS/Cloud+Foundry+Plugin).**
 
+**For reporting an issue, please use the
+[Jenkins issue tracker](https://issues.jenkins-ci.org/browse/JENKINS/component/19824/).**
+
 Installing:
 -----------
 Due to conflicts between the versions of Spring used by Jenkins and the CF Java client, this plugin uses a modified
