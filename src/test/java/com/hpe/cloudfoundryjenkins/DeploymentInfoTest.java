@@ -1,16 +1,15 @@
 /**
+ * ©Copyright 2015 Hewlett-Packard Development Company, L.P.
  * Copyright (c) ActiveState 2014 - ALL RIGHTS RESERVED.
  */
 
-package com.activestate.cloudfoundryjenkins;
+package com.hpe.cloudfoundryjenkins;
 
-import com.activestate.cloudfoundryjenkins.CloudFoundryPushPublisher.EnvironmentVariable;
-import com.activestate.cloudfoundryjenkins.CloudFoundryPushPublisher.ManifestChoice;
-import com.activestate.cloudfoundryjenkins.CloudFoundryPushPublisher.ServiceName;
 import hudson.FilePath;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.TaskListener;
+import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -22,7 +21,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.activestate.cloudfoundryjenkins.CloudFoundryPushPublisher.DescriptorImpl.*;
 import static org.junit.Assert.*;
 
 public class DeploymentInfoTest {
@@ -77,11 +75,11 @@ public class DeploymentInfoTest {
                 new DeploymentInfo(System.out, appInfo, "jenkins-build-name", "domain-name", "");
 
         assertEquals("jenkins-build-name", deploymentInfo.getAppName());
-        assertEquals(DEFAULT_MEMORY, deploymentInfo.getMemory());
+        Assert.assertEquals(CloudFoundryPushPublisher.DescriptorImpl.DEFAULT_MEMORY, deploymentInfo.getMemory());
         assertEquals("jenkins-build-name", deploymentInfo.getHostname());
-        assertEquals(DEFAULT_INSTANCES, deploymentInfo.getInstances());
-        assertEquals(DEFAULT_STACK, deploymentInfo.getStack());
-        assertEquals(DEFAULT_TIMEOUT, deploymentInfo.getTimeout());
+        Assert.assertEquals(CloudFoundryPushPublisher.DescriptorImpl.DEFAULT_INSTANCES, deploymentInfo.getInstances());
+        Assert.assertEquals(CloudFoundryPushPublisher.DescriptorImpl.DEFAULT_STACK, deploymentInfo.getStack());
+        Assert.assertEquals(CloudFoundryPushPublisher.DescriptorImpl.DEFAULT_TIMEOUT, deploymentInfo.getTimeout());
         assertEquals(false, deploymentInfo.isNoRoute());
         assertEquals("domain-name", deploymentInfo.getDomain());
         assertEquals("", deploymentInfo.getAppPath());
@@ -111,16 +109,16 @@ public class DeploymentInfoTest {
 
     @Test
     public void testOptionalJenkinsConfigAllOptions() throws Exception {
-        List<EnvironmentVariable> envVars = new ArrayList<EnvironmentVariable>();
-        envVars.add(new EnvironmentVariable("ENV_VAR_ONE", "value1"));
-        envVars.add(new EnvironmentVariable("ENV_VAR_TWO", "value2"));
-        envVars.add(new EnvironmentVariable("ENV_VAR_THREE", "value3"));
-        List<ServiceName> services = new ArrayList<ServiceName>();
-        services.add(new ServiceName("service_name_one"));
-        services.add(new ServiceName("service_name_two"));
-        services.add(new ServiceName("service_name_three"));
-        ManifestChoice jenkinsManifest =
-                new ManifestChoice("jenkinsConfig", null, "hello-java", 512, "testhost", 4, 42, true,
+        List<CloudFoundryPushPublisher.EnvironmentVariable> envVars = new ArrayList<CloudFoundryPushPublisher.EnvironmentVariable>();
+        envVars.add(new CloudFoundryPushPublisher.EnvironmentVariable("ENV_VAR_ONE", "value1"));
+        envVars.add(new CloudFoundryPushPublisher.EnvironmentVariable("ENV_VAR_TWO", "value2"));
+        envVars.add(new CloudFoundryPushPublisher.EnvironmentVariable("ENV_VAR_THREE", "value3"));
+        List<CloudFoundryPushPublisher.ServiceName> services = new ArrayList<CloudFoundryPushPublisher.ServiceName>();
+        services.add(new CloudFoundryPushPublisher.ServiceName("service_name_one"));
+        services.add(new CloudFoundryPushPublisher.ServiceName("service_name_two"));
+        services.add(new CloudFoundryPushPublisher.ServiceName("service_name_three"));
+        CloudFoundryPushPublisher.ManifestChoice jenkinsManifest =
+                new CloudFoundryPushPublisher.ManifestChoice("jenkinsConfig", null, "hello-java", 512, "testhost", 4, 42, true,
                         "target/hello-java-1.0.war",
                         "https://github.com/heroku/heroku-buildpack-hello", "customstack",
                         "echo Hello", "testdomain.local", envVars, services);
@@ -154,17 +152,17 @@ public class DeploymentInfoTest {
 
     @Test
     public void testReadJenkinsConfigDefaultOptions() throws Exception {
-        ManifestChoice jenkinsManifest =
-                new ManifestChoice("jenkinsConfig", null, "", 0, "", 0, 0, false, "", "", "", "", "", null, null);
+        CloudFoundryPushPublisher.ManifestChoice jenkinsManifest =
+                new CloudFoundryPushPublisher.ManifestChoice("jenkinsConfig", null, "", 0, "", 0, 0, false, "", "", "", "", "", null, null);
         DeploymentInfo deploymentInfo =
                 new DeploymentInfo(System.out, jenkinsManifest, "jenkins-build-name", "domain-name");
 
         assertEquals("jenkins-build-name", deploymentInfo.getAppName());
-        assertEquals(DEFAULT_MEMORY, deploymentInfo.getMemory());
+        Assert.assertEquals(CloudFoundryPushPublisher.DescriptorImpl.DEFAULT_MEMORY, deploymentInfo.getMemory());
         assertEquals("jenkins-build-name", deploymentInfo.getHostname());
-        assertEquals(DEFAULT_INSTANCES, deploymentInfo.getInstances());
-        assertEquals(DEFAULT_TIMEOUT, deploymentInfo.getTimeout());
-        assertEquals(DEFAULT_STACK, deploymentInfo.getStack());
+        Assert.assertEquals(CloudFoundryPushPublisher.DescriptorImpl.DEFAULT_INSTANCES, deploymentInfo.getInstances());
+        Assert.assertEquals(CloudFoundryPushPublisher.DescriptorImpl.DEFAULT_TIMEOUT, deploymentInfo.getTimeout());
+        Assert.assertEquals(CloudFoundryPushPublisher.DescriptorImpl.DEFAULT_STACK, deploymentInfo.getStack());
         assertEquals(false, deploymentInfo.isNoRoute());
         assertEquals("domain-name", deploymentInfo.getDomain());
         assertEquals("", deploymentInfo.getAppPath());
@@ -181,8 +179,8 @@ public class DeploymentInfoTest {
         FreeStyleBuild build = project.scheduleBuild2(0).get();
         build.setDisplayName("test-build");
         TaskListener listener = j.createTaskListener();
-        ManifestChoice jenkinsManifest =
-                new ManifestChoice("jenkinsConfig", null, "${BUILD_DISPLAY_NAME}",
+        CloudFoundryPushPublisher.ManifestChoice jenkinsManifest =
+                new CloudFoundryPushPublisher.ManifestChoice("jenkinsConfig", null, "${BUILD_DISPLAY_NAME}",
                         0, "", 0, 0, false, "", "", "", "", "", null, null);
         DeploymentInfo deploymentInfo =
                 new DeploymentInfo(build, listener, System.out, jenkinsManifest, "jenkins-build-name", "domain-name");

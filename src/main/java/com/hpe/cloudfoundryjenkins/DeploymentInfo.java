@@ -1,13 +1,14 @@
 /**
+ * ©Copyright 2015 Hewlett-Packard Development Company, L.P.
  * Copyright (c) ActiveState 2014 - ALL RIGHTS RESERVED.
  */
 
-package com.activestate.cloudfoundryjenkins;
+package com.hpe.cloudfoundryjenkins;
 
-import com.activestate.cloudfoundryjenkins.CloudFoundryPushPublisher.DescriptorImpl;
-import com.activestate.cloudfoundryjenkins.CloudFoundryPushPublisher.EnvironmentVariable;
-import com.activestate.cloudfoundryjenkins.CloudFoundryPushPublisher.ManifestChoice;
-import com.activestate.cloudfoundryjenkins.CloudFoundryPushPublisher.ServiceName;
+import com.hpe.cloudfoundryjenkins.CloudFoundryPushPublisher.DescriptorImpl;
+import com.hpe.cloudfoundryjenkins.CloudFoundryPushPublisher.EnvironmentVariable;
+import com.hpe.cloudfoundryjenkins.CloudFoundryPushPublisher.ManifestChoice;
+import com.hpe.cloudfoundryjenkins.CloudFoundryPushPublisher.ServiceName;
 import hudson.model.AbstractBuild;
 import hudson.model.TaskListener;
 import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
