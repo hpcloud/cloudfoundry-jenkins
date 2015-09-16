@@ -9,7 +9,6 @@ import hudson.FilePath;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.TaskListener;
-import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -21,6 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.hpe.cloudfoundryjenkins.CloudFoundryPushPublisher.DescriptorImpl.*;
 import static org.junit.Assert.*;
 
 public class DeploymentInfoTest {
@@ -75,11 +75,11 @@ public class DeploymentInfoTest {
                 new DeploymentInfo(System.out, appInfo, "jenkins-build-name", "domain-name", "");
 
         assertEquals("jenkins-build-name", deploymentInfo.getAppName());
-        Assert.assertEquals(CloudFoundryPushPublisher.DescriptorImpl.DEFAULT_MEMORY, deploymentInfo.getMemory());
+        assertEquals(DEFAULT_MEMORY, deploymentInfo.getMemory());
         assertEquals("jenkins-build-name", deploymentInfo.getHostname());
-        Assert.assertEquals(CloudFoundryPushPublisher.DescriptorImpl.DEFAULT_INSTANCES, deploymentInfo.getInstances());
-        Assert.assertEquals(CloudFoundryPushPublisher.DescriptorImpl.DEFAULT_STACK, deploymentInfo.getStack());
-        Assert.assertEquals(CloudFoundryPushPublisher.DescriptorImpl.DEFAULT_TIMEOUT, deploymentInfo.getTimeout());
+        assertEquals(DEFAULT_INSTANCES, deploymentInfo.getInstances());
+        assertEquals(DEFAULT_STACK, deploymentInfo.getStack());
+        assertEquals(DEFAULT_TIMEOUT, deploymentInfo.getTimeout());
         assertEquals(false, deploymentInfo.isNoRoute());
         assertEquals("domain-name", deploymentInfo.getDomain());
         assertEquals("", deploymentInfo.getAppPath());
@@ -158,11 +158,11 @@ public class DeploymentInfoTest {
                 new DeploymentInfo(System.out, jenkinsManifest, "jenkins-build-name", "domain-name");
 
         assertEquals("jenkins-build-name", deploymentInfo.getAppName());
-        Assert.assertEquals(CloudFoundryPushPublisher.DescriptorImpl.DEFAULT_MEMORY, deploymentInfo.getMemory());
+        assertEquals(DEFAULT_MEMORY, deploymentInfo.getMemory());
         assertEquals("jenkins-build-name", deploymentInfo.getHostname());
-        Assert.assertEquals(CloudFoundryPushPublisher.DescriptorImpl.DEFAULT_INSTANCES, deploymentInfo.getInstances());
-        Assert.assertEquals(CloudFoundryPushPublisher.DescriptorImpl.DEFAULT_TIMEOUT, deploymentInfo.getTimeout());
-        Assert.assertEquals(CloudFoundryPushPublisher.DescriptorImpl.DEFAULT_STACK, deploymentInfo.getStack());
+        assertEquals(DEFAULT_INSTANCES, deploymentInfo.getInstances());
+        assertEquals(DEFAULT_TIMEOUT, deploymentInfo.getTimeout());
+        assertEquals(DEFAULT_STACK, deploymentInfo.getStack());
         assertEquals(false, deploymentInfo.isNoRoute());
         assertEquals("domain-name", deploymentInfo.getDomain());
         assertEquals("", deploymentInfo.getAppPath());
