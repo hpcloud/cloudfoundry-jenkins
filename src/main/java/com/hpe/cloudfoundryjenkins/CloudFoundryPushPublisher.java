@@ -358,7 +358,7 @@ public class CloudFoundryPushPublisher extends Recorder {
         if (createNewApp) {
             listener.getLogger().println("Creating new app.");
             String stack = deploymentInfo.getStack();
-            if (client.getStack(stack) == null) {
+            if (stack != null && client.getStack(stack) == null) {
                 throw new IllegalArgumentException("Stack " + stack + " does not exist on the target.");
             }
             Staging staging = new Staging(deploymentInfo.getCommand(), deploymentInfo.getBuildpack(),
