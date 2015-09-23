@@ -1,7 +1,7 @@
 ---
 applications:
 - name: hello-java
-  memory: 512M
+  memory: 512
   host: testhost
   instances: 4
   timeout: 42

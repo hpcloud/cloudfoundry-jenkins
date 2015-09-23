@@ -102,14 +102,24 @@ public class DeploymentInfo {
             appName = jenkinsBuildName;
         }
 
-        int memory = 0;
-        String memString = (String) manifestJson.get("memory");
-        if (memString == null) {
+        int memory;
+        Object mem = manifestJson.get("memory");
+        if (mem == null) {
             logger.println("WARNING: No manifest value for memory. Using default value: " +
                     DescriptorImpl.DEFAULT_MEMORY);
             memory = DescriptorImpl.DEFAULT_MEMORY;
-        } else if (memString.toLowerCase().endsWith("m")) {
-            memory = Integer.parseInt(memString.substring(0, memString.length() - 1));
+        } else {
+            // The YAML parser from ManifestReader might make the memory value an Integer or a String
+            // depending on whether or not there is a unit at the end of the value
+            if(mem instanceof Integer) {
+                memory = (Integer) mem;
+            } else {
+                String memString = (String) mem;
+                if (memString.toLowerCase().endsWith("m")) {
+                    memString = memString.substring(0, memString.length() - 1);
+                }
+                memory = Integer.parseInt(memString);
+            }
         }
         this.memory = memory;
 
