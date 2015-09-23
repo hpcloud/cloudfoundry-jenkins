@@ -27,6 +27,7 @@ import hudson.util.Secret;
 import jenkins.model.Jenkins;
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
+import org.apache.tomcat.util.http.fileupload.FileUtils;
 import org.cloudfoundry.client.lib.*;
 import org.cloudfoundry.client.lib.domain.*;
 import org.cloudfoundry.client.lib.org.springframework.web.client.ResourceAccessException;
@@ -403,7 +404,12 @@ public class CloudFoundryPushPublisher extends Recorder {
                 // We can now use tempOutputDirectory which is a copy of the target directory but on master
                 client.uploadApplication(deploymentInfo.getAppName(), tempOutputDirectory);
                 // Delete temporary files
-                boolean deleted = tempAppFile.delete() && tempOutputDirectory.delete();
+                boolean deleted = tempAppFile.delete();
+                try {
+                    FileUtils.deleteDirectory(tempOutputDirectory);
+                } catch (IOException e) {
+                    deleted = false;
+                }
                 if (!deleted) {
                     listener.getLogger().println("WARNING: Temporary files were not deleted successfully.");
                 }
