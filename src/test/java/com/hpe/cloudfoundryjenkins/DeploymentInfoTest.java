@@ -106,6 +106,24 @@ public class DeploymentInfoTest {
         assertEquals("test-build", deploymentInfo.getAppName());
     }
 
+    @Test
+    public void testIgnoreUnknownEnvVarsFileMacroTokens() throws Exception {
+        FreeStyleProject project = j.createFreeStyleProject();
+        FreeStyleBuild build = project.scheduleBuild2(0).get();
+        build.setDisplayName("test-build");
+        TaskListener listener = j.createTaskListener();
+        File manifestFile = new File(getClass().getResource("unknown-env-var-token-manifest.yml").toURI());
+        FilePath manifestFilePath = new FilePath(manifestFile);
+        ManifestReader manifestReader = new ManifestReader(manifestFilePath);
+        Map<String, Object> appInfo = manifestReader.getApplicationInfo();
+        DeploymentInfo deploymentInfo =
+                new DeploymentInfo(build, listener, System.out, appInfo, "jenkins-build-name", "domain-name", "");
+
+        assertEquals("test-build", deploymentInfo.getAppName());
+        Map<String, String> expectedEnvs = new HashMap<String, String>();
+        expectedEnvs.put("ENV_VAR_ONE", "$SOME_UNKNOWN_MACRO");
+        assertEquals(expectedEnvs, deploymentInfo.getEnvVars());
+    }
 
     @Test
     public void testOptionalJenkinsConfigAllOptions() throws Exception {

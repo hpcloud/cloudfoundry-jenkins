@@ -1,0 +1,5 @@
+---
+applications:
+- name: ${BUILD_DISPLAY_NAME}
+  env:
+    ENV_VAR_ONE: "$SOME_UNKNOWN_MACRO"
