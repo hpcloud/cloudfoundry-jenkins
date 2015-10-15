@@ -42,6 +42,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -247,7 +248,12 @@ public class CloudFoundryPushPublisher extends Recorder {
 
             // Add environment variables
             if (!deploymentInfo.getEnvVars().isEmpty()) {
-                client.updateApplicationEnv(appName, deploymentInfo.getEnvVars());
+                Map<String, Object> appEnvs = client.getApplicationEnvironment(appName);
+                Map<String, String> newEnvs = new HashMap<String, String>();
+                // Unavoidable cast warning
+                newEnvs.putAll((Map<String, String>) appEnvs.get("environment_json"));
+                newEnvs.putAll(deploymentInfo.getEnvVars());
+                client.updateApplicationEnv(appName, newEnvs);
             }
 
             // Change number of instances
