@@ -1,5 +1,5 @@
 /**
- * ©Copyright 2015 Hewlett-Packard Development Company, L.P.
+ * © Copyright 2015 Hewlett Packard Enterprise Development LP
  * Copyright (c) ActiveState 2014 - ALL RIGHTS RESERVED.
  */
 
