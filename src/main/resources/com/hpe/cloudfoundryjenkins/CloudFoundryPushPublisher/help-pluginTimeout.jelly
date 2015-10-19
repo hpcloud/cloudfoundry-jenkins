@@ -1,0 +1,6 @@
+<div>
+  The time in seconds before the Cloud Foundry plugin stops fetching logs and marks the build a failure. The default is
+  120. The target will not be affected by this timeout, and will possibly continue the staging of the application.
+  <br/>
+  This is similar to the "client timeout" option of the cf command line client (available with the "-t" switch).
+</div>

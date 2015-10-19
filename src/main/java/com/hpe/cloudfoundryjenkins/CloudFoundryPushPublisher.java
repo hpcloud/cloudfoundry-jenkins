@@ -50,7 +50,7 @@ import java.util.regex.Pattern;
 public class CloudFoundryPushPublisher extends Recorder {
 
     private static final String DEFAULT_MANIFEST_PATH = "manifest.yml";
-    private static final int TIMEOUT = 120;
+    private static final int DEFAULT_PLUGIN_TIMEOUT = 120;
 
     public String target;
     public String organization;
@@ -58,6 +58,7 @@ public class CloudFoundryPushPublisher extends Recorder {
     public String credentialsId;
     public boolean selfSigned;
     public boolean resetIfExists;
+    public int pluginTimeout;
     public List<Service> servicesToCreate;
     public ManifestChoice manifestChoice;
 
@@ -69,7 +70,7 @@ public class CloudFoundryPushPublisher extends Recorder {
     @DataBoundConstructor
     public CloudFoundryPushPublisher(String target, String organization, String cloudSpace,
                                      String credentialsId, boolean selfSigned,
-                                     boolean resetIfExists, List<Service> servicesToCreate,
+                                     boolean resetIfExists, int pluginTimeout, List<Service> servicesToCreate,
                                      ManifestChoice manifestChoice) {
         this.target = target;
         this.organization = organization;
@@ -77,6 +78,11 @@ public class CloudFoundryPushPublisher extends Recorder {
         this.credentialsId = credentialsId;
         this.selfSigned = selfSigned;
         this.resetIfExists = resetIfExists;
+        if (pluginTimeout == 0) {
+            this.pluginTimeout = DEFAULT_PLUGIN_TIMEOUT;
+        } else {
+            this.pluginTimeout = pluginTimeout;
+        }
         if (servicesToCreate == null) {
             this.servicesToCreate = new ArrayList<Service>();
         } else {
@@ -283,7 +289,7 @@ public class CloudFoundryPushPublisher extends Recorder {
             // Keep checking to see if the app is running
             int running = 0;
             int totalInstances = 0;
-            for (int tries = 0; tries < TIMEOUT; tries++) {
+            for (int tries = 0; tries < pluginTimeout; tries++) {
                 running = 0;
                 InstancesInfo instancesInfo = client.getApplicationInstances(app);
                 if (instancesInfo != null) {
@@ -318,7 +324,8 @@ public class CloudFoundryPushPublisher extends Recorder {
                 listener.getLogger().println("Cloud Foundry push successful.");
                 return true;
             } else {
-                listener.getLogger().println("ERROR: The application failed to start after " + TIMEOUT + " seconds.");
+                listener.getLogger().println(
+                        "ERROR: The application failed to start after " + pluginTimeout + " seconds.");
                 listener.getLogger().println("Cloud Foundry push failed.");
                 return false;
             }
@@ -728,6 +735,11 @@ public class CloudFoundryPushPublisher extends Recorder {
         }
 
         @SuppressWarnings("unused")
+        public FormValidation doCheckPluginTimeout(@QueryParameter String value) {
+            return FormValidation.validatePositiveInteger(value);
+        }
+
+        @SuppressWarnings("unused")
         public FormValidation doCheckMemory(@QueryParameter String value) {
             return FormValidation.validatePositiveInteger(value);
         }
@@ -761,6 +773,9 @@ public class CloudFoundryPushPublisher extends Recorder {
     private Object readResolve() {
         if (servicesToCreate == null) { // Introduced in 1.4
             this.servicesToCreate = new ArrayList<Service>();
+        }
+        if (pluginTimeout == 0) { // Introduced in 1.5
+            this.pluginTimeout = DEFAULT_PLUGIN_TIMEOUT;
         }
         return this;
     }
