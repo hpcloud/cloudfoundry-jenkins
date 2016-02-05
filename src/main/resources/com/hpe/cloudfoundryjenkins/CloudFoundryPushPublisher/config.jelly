@@ -51,6 +51,9 @@
     <f:entry title="Manifest file" field="manifestFile">
       <f:textbox value="${instance.manifestChoice.manifestFile}" default="manifest.yml"/>
     </f:entry>
+    <f:entry title="Disable Token Replacement" field="manifestDisableTokenReplacement">
+      <f:checkbox checked="${instance.manifestChoice.manifestDisableTokenReplacement}" default="false" />
+    </f:entry>
   </f:radioBlock>
 
   <f:radioBlock title="Enter configuration in Jenkins" name="manifestChoice" value="jenkinsConfig"

@@ -50,11 +50,13 @@ public class DeploymentInfo {
      * Takes an appInfo Map that is created from a ManifestReader.
      */
     public DeploymentInfo(AbstractBuild build, TaskListener listener, PrintStream logger, Map<String, Object> appInfo,
-                          String jenkinsBuildName, String defaultDomain, String manifestPath)
+                          String jenkinsBuildName, String defaultDomain, String manifestPath, boolean disableManifestTokens)
             throws IOException, ManifestParsingException, InterruptedException, MacroEvaluationException {
 
         readManifestFile(logger, appInfo, jenkinsBuildName, defaultDomain, manifestPath);
-        expandTokenMacros(build, listener);
+        if (!disableManifestTokens) {
+            expandTokenMacros(build, listener);
+        }
     }
 
     /**
@@ -65,7 +67,9 @@ public class DeploymentInfo {
             throws IOException, ManifestParsingException, InterruptedException, MacroEvaluationException {
 
         readOptionalJenkinsConfig(logger, optionalJenkinsConfig, jenkinsBuildName, defaultDomain);
-        expandTokenMacros(build, listener);
+        if (!optionalJenkinsConfig.manifestDisableTokenReplacement) {
+            expandTokenMacros(build, listener);
+        }
     }
 
     /**
