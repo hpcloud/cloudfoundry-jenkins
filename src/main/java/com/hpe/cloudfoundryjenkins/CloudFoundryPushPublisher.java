@@ -174,7 +174,7 @@ public class CloudFoundryPushPublisher extends Recorder {
                 for (Map<String, Object> appInfo : appList) {
                     allDeploymentInfo.add(
                             new DeploymentInfo(build, listener, listener.getLogger(),
-                                    appInfo, jenkinsBuildName, domain, manifestChoice.manifestFile));
+                                    appInfo, jenkinsBuildName, domain, manifestChoice.manifestFile, manifestChoice.manifestDisableTokenReplacement));
                 }
             } else {
                 // Read Jenkins configuration
@@ -505,6 +505,7 @@ public class CloudFoundryPushPublisher extends Recorder {
 
         // Variable of the choice "manifestFile". Will be null if 'value' is "jenkinsConfig".
         public final String manifestFile;
+        public final boolean manifestDisableTokenReplacement;
 
         // Variables of the choice "jenkinsConfig". Will all be null (or 0 or false) if 'value' is "manifestFile".
         public final String appName;
@@ -523,7 +524,7 @@ public class CloudFoundryPushPublisher extends Recorder {
 
 
         @DataBoundConstructor
-        public ManifestChoice(String value, String manifestFile,
+        public ManifestChoice(String value, String manifestFile, boolean manifestDisableTokenReplacement,
                               String appName, int memory, String hostname, int instances, int timeout, boolean noRoute,
                               String appPath, String buildpack, String stack, String command, String domain,
                               List<EnvironmentVariable> envVars, List<ServiceName> servicesNames) {
@@ -537,6 +538,8 @@ public class CloudFoundryPushPublisher extends Recorder {
             } else {
                 this.manifestFile = manifestFile;
             }
+
+            this.manifestDisableTokenReplacement = manifestDisableTokenReplacement;
 
             this.appName = appName;
             this.memory = memory;
@@ -558,7 +561,7 @@ public class CloudFoundryPushPublisher extends Recorder {
          * This is mostly for easier unit tests.
          */
         public static ManifestChoice defaultManifestFileConfig() {
-            return new ManifestChoice("manifestFile", DEFAULT_MANIFEST_PATH,
+            return new ManifestChoice("manifestFile", DEFAULT_MANIFEST_PATH, false,
                     null, 0, null, 0, 0, false, null, null, null, null, null, null, null);
         }
     }
