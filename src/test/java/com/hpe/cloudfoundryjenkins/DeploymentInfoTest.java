@@ -101,7 +101,7 @@ public class DeploymentInfoTest {
         ManifestReader manifestReader = new ManifestReader(manifestFilePath);
         Map<String, Object> appInfo = manifestReader.getApplicationInfo();
         DeploymentInfo deploymentInfo =
-                new DeploymentInfo(build, listener, System.out, appInfo, "jenkins-build-name", "domain-name", "");
+                new DeploymentInfo(build, listener, System.out, appInfo, "jenkins-build-name", "domain-name", "", false);
 
         assertEquals("test-build", deploymentInfo.getAppName());
     }
@@ -117,7 +117,7 @@ public class DeploymentInfoTest {
         ManifestReader manifestReader = new ManifestReader(manifestFilePath);
         Map<String, Object> appInfo = manifestReader.getApplicationInfo();
         DeploymentInfo deploymentInfo =
-                new DeploymentInfo(build, listener, System.out, appInfo, "jenkins-build-name", "domain-name", "");
+                new DeploymentInfo(build, listener, System.out, appInfo, "jenkins-build-name", "domain-name", "", false);
 
         assertEquals("test-build", deploymentInfo.getAppName());
         Map<String, String> expectedEnvs = new HashMap<String, String>();
@@ -136,7 +136,7 @@ public class DeploymentInfoTest {
         services.add(new CloudFoundryPushPublisher.ServiceName("service_name_two"));
         services.add(new CloudFoundryPushPublisher.ServiceName("service_name_three"));
         CloudFoundryPushPublisher.ManifestChoice jenkinsManifest =
-                new CloudFoundryPushPublisher.ManifestChoice("jenkinsConfig", null, "hello-java", 512, "testhost", 4, 42, true,
+                new CloudFoundryPushPublisher.ManifestChoice("jenkinsConfig", null, false, "hello-java", 512, "testhost", 4, 42, true,
                         "target/hello-java-1.0.war",
                         "https://github.com/heroku/heroku-buildpack-hello", "customstack",
                         "echo Hello", "testdomain.local", envVars, services);
@@ -171,7 +171,7 @@ public class DeploymentInfoTest {
     @Test
     public void testReadJenkinsConfigDefaultOptions() throws Exception {
         CloudFoundryPushPublisher.ManifestChoice jenkinsManifest =
-                new CloudFoundryPushPublisher.ManifestChoice("jenkinsConfig", null, "", 0, "", 0, 0, false, "", "", "", "", "", null, null);
+                new CloudFoundryPushPublisher.ManifestChoice("jenkinsConfig", null, false, "", 0, "", 0, 0, false, "", "", "", "", "", null, null);
         DeploymentInfo deploymentInfo =
                 new DeploymentInfo(System.out, jenkinsManifest, "jenkins-build-name", "domain-name");
 
@@ -198,11 +198,26 @@ public class DeploymentInfoTest {
         build.setDisplayName("test-build");
         TaskListener listener = j.createTaskListener();
         CloudFoundryPushPublisher.ManifestChoice jenkinsManifest =
-                new CloudFoundryPushPublisher.ManifestChoice("jenkinsConfig", null, "${BUILD_DISPLAY_NAME}",
+                new CloudFoundryPushPublisher.ManifestChoice("jenkinsConfig", null, false, "${BUILD_DISPLAY_NAME}",
                         0, "", 0, 0, false, "", "", "", "", "", null, null);
         DeploymentInfo deploymentInfo =
                 new DeploymentInfo(build, listener, System.out, jenkinsManifest, "jenkins-build-name", "domain-name");
 
         assertEquals("test-build", deploymentInfo.getAppName());
+    }
+
+    @Test
+    public void testReadJenkinsConfigDisableMacroTokens() throws Exception {
+        FreeStyleProject project = j.createFreeStyleProject();
+        FreeStyleBuild build = project.scheduleBuild2(0).get();
+        build.setDisplayName("test-build");
+        TaskListener listener = j.createTaskListener();
+        CloudFoundryPushPublisher.ManifestChoice jenkinsManifest =
+                new CloudFoundryPushPublisher.ManifestChoice("jenkinsConfig", null, true, "${BUILD_DISPLAY_NAME}",
+                        0, "", 0, 0, false, "", "", "", "", "", null, null);
+        DeploymentInfo deploymentInfo =
+                new DeploymentInfo(build, listener, System.out, jenkinsManifest, "jenkins-build-name", "domain-name");
+
+        assertEquals("${BUILD_DISPLAY_NAME}", deploymentInfo.getAppName());
     }
 }

@@ -67,7 +67,9 @@ public class DeploymentInfo {
             throws IOException, ManifestParsingException, InterruptedException, MacroEvaluationException {
 
         readOptionalJenkinsConfig(logger, optionalJenkinsConfig, jenkinsBuildName, defaultDomain);
-        expandTokenMacros(build, listener);
+        if (!optionalJenkinsConfig.manifestDisableTokenReplacement) {
+            expandTokenMacros(build, listener);
+        }
     }
 
     /**
