@@ -384,6 +384,10 @@ public class CloudFoundryPushPublisher extends Recorder {
             }
             List<String> services = deploymentInfo.getServicesNames();
             client.createApplication(deploymentInfo.getAppName(), staging, deploymentInfo.getMemory(), uris, services);
+        } else {
+            Staging staging = new Staging(deploymentInfo.getCommand(), deploymentInfo.getBuildpack(),
+                deploymentInfo.getStack(), deploymentInfo.getTimeout());
+            client.updateApplicationStaging(deploymentInfo.getAppName(), staging);
         }
 
         return createNewApp;
