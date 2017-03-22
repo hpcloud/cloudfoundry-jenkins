@@ -368,6 +368,9 @@ public class CloudFoundryPushPublisher extends Recorder {
             }
         }
 
+        Staging staging = new Staging(deploymentInfo.getCommand(), deploymentInfo.getBuildpack(),
+            deploymentInfo.getStack(), deploymentInfo.getTimeout());
+
         // Create app if it doesn't exist
         if (createNewApp) {
             listener.getLogger().println("Creating new app.");
@@ -375,8 +378,6 @@ public class CloudFoundryPushPublisher extends Recorder {
             if (stack != null && client.getStack(stack) == null) {
                 throw new IllegalArgumentException("Stack " + stack + " does not exist on the target.");
             }
-            Staging staging = new Staging(deploymentInfo.getCommand(), deploymentInfo.getBuildpack(),
-                    deploymentInfo.getStack(), deploymentInfo.getTimeout());
             List<String> uris = new ArrayList<String>();
             // Pass an empty List as the uri list if no-route is set
             if (!deploymentInfo.isNoRoute()) {
@@ -384,6 +385,8 @@ public class CloudFoundryPushPublisher extends Recorder {
             }
             List<String> services = deploymentInfo.getServicesNames();
             client.createApplication(deploymentInfo.getAppName(), staging, deploymentInfo.getMemory(), uris, services);
+        } else {
+            client.updateApplicationStaging(deploymentInfo.getAppName(), staging);
         }
 
         return createNewApp;
