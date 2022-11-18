@@ -41,6 +41,7 @@ import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -398,7 +399,7 @@ public class CloudFoundryPushPublisher extends Recorder {
             if (appPath.isDirectory()) {
                 // The build is distributed, and a directory
                 // We need to make a copy of the target directory on the master
-                File tempAppFile = File.createTempFile("appFile", null); // This is on the master
+                File tempAppFile = Files.createTempFile("appFile", null).toFile(); // This is on the master
                 OutputStream outputStream = new FileOutputStream(tempAppFile);
                 appPath.zip(outputStream);
 
